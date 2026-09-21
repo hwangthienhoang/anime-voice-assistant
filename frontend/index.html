@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Hana, trợ lý giọng nói</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="app">
+      <section class="stage" aria-label="Nhân vật">
+        <canvas id="avatar"></canvas>
+
+        <div id="model-notice" class="notice" hidden>
+          <p class="notice-title">Chưa có nhân vật</p>
+          <p class="notice-body">
+            Chọn một file <code>.vrm</code> (tạo bằng VRoid Studio hoặc tải từ VRoid Hub), hoặc đặt file
+            vào <code>frontend/public/models/avatar.vrm</code>.
+          </p>
+          <label class="btn btn-solid">
+            Chọn file .vrm
+            <input id="vrm-file" type="file" accept=".vrm" hidden />
+          </label>
+        </div>
+
+        <div class="stage-bottom">
+          <p id="status" class="status" role="status" aria-live="polite">Sẵn sàng</p>
+          <button id="mic" class="mic" type="button" aria-pressed="false" aria-label="Bật micro">
+            <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 1 0-7 0v6A3.5 3.5 0 0 0 12 15Zm6-3.5a1 1 0 1 0-2 0 4 4 0 0 1-8 0 1 1 0 1 0-2 0 6 6 0 0 0 5 5.91V19H9.5a1 1 0 1 0 0 2h5a1 1 0 1 0 0-2H13v-1.59A6 6 0 0 0 18 11.5Z"
+              />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Hội thoại">
+        <header class="panel-head">
+          <h1>Hana</h1>
+          <label class="btn btn-quiet" title="Đổi nhân vật">
+            Đổi nhân vật
+            <input id="vrm-file-2" type="file" accept=".vrm" hidden />
+          </label>
+        </header>
+
+        <ol id="log" class="log" aria-live="polite"></ol>
+
+        <form id="form" class="composer" autocomplete="off">
+          <input id="input" type="text" placeholder="Nhập tin nhắn, hoặc bấm micro để nói" />
+          <button class="btn btn-solid" type="submit">Gửi</button>
+        </form>
+      </aside>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

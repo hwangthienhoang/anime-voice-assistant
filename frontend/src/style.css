@@ -1,0 +1,342 @@
+:root {
+  --night: #15173a;
+  --dusk: #2b2a5e;
+  --mist: #cfcaff;
+  --sakura: #ff9db8;
+  --paper: #f6f4ff;
+  --ink: #0f1030;
+  --ink-soft: #55567d;
+  --line: #ddd9f5;
+
+  --font: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --level: 0; /* 0..1, cập nhật từ JS theo âm lượng */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--night);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  height: 100%;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ---------- Sân khấu ---------- */
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 45% at 50% 42%, rgba(207, 202, 255, 0.28), transparent 70%),
+    linear-gradient(180deg, var(--dusk) 0%, var(--night) 100%);
+}
+
+/* Vầng trăng lớn phía sau nhân vật, gợi phông nền anime */
+.stage::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(62vh, 70%);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6f4ff 0%, var(--mist) 55%, #a9a2ee 100%);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+#avatar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.stage-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.stage-bottom > * {
+  pointer-events: auto;
+}
+
+.status {
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--paper);
+  background: rgba(15, 16, 48, 0.55);
+  backdrop-filter: blur(6px);
+  transition: opacity 0.2s;
+}
+
+.mic {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.mic::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--sakura);
+  opacity: 0;
+  transform: scale(calc(1 + var(--level) * 0.35));
+  transition: opacity 0.2s;
+}
+
+.mic:hover {
+  transform: translateY(-2px);
+}
+
+.mic[aria-pressed='true'] {
+  background: var(--sakura);
+}
+
+.mic[aria-pressed='true']::after {
+  opacity: 0.9;
+}
+
+.mic:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.notice {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  width: min(360px, 84%);
+  padding: 22px;
+  border-radius: 18px;
+  text-align: center;
+  color: var(--paper);
+  background: rgba(15, 16, 48, 0.62);
+  backdrop-filter: blur(8px);
+}
+
+.notice[hidden] {
+  display: none;
+}
+
+.notice-title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.notice-body {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--mist);
+}
+
+code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.92em;
+}
+
+/* ---------- Bảng hội thoại ---------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--paper);
+  border-left: 1px solid var(--line);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 12px;
+}
+
+.panel-head h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.log {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 8px 20px 16px;
+  list-style: none;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg {
+  max-width: 88%;
+  padding: 10px 14px;
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.msg.user {
+  align-self: flex-end;
+  color: var(--paper);
+  background: var(--dusk);
+  border-radius: 18px 18px 4px 18px;
+}
+
+.msg.assistant {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px 18px 18px 4px;
+}
+
+.msg.interim {
+  opacity: 0.55;
+}
+
+.msg.error {
+  align-self: stretch;
+  max-width: 100%;
+  font-size: 13px;
+  color: #8a1f3d;
+  background: #ffe7ee;
+  border-radius: 12px;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.composer input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  background: #fff;
+  color: var(--ink);
+}
+
+/* ---------- Nút ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-solid {
+  color: var(--paper);
+  background: var(--dusk);
+}
+
+.btn-solid:hover {
+  background: var(--night);
+}
+
+.notice .btn-solid {
+  color: var(--ink);
+  background: var(--sakura);
+}
+
+.btn-quiet {
+  padding: 6px 12px;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.btn-quiet:hover {
+  color: var(--ink);
+  border-color: var(--mist);
+}
+
+:focus-visible {
+  outline: 2px solid var(--sakura);
+  outline-offset: 2px;
+}
+
+/* ---------- Di động ---------- */
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 58% 42%;
+  }
+
+  .panel {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .stage-bottom {
+    bottom: 14px;
+  }
+
+  .mic {
+    width: 58px;
+    height: 58px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
