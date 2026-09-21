@@ -8,8 +8,15 @@ const EMOTIONS = ['happy', 'sad', 'angry', 'surprised', 'relaxed'];
 // Góc hạ tay khỏi tư thế chữ T (radian). Nếu model của bạn bị giơ tay lên, đổi dấu của hằng số này.
 const ARM_DOWN = 1.2;
 
-// Vị trí camera (bán thân). Chỉnh ở đây nếu muốn cận/xa hơn.
-const CAMERA = { y: 1.3, lookAtY: 1.22, minDistance: 1.9 };
+// Khung hình bán thân, tính theo TỈ LỆ so với chiều cao hông→đầu của model
+// (không phải mét tuyệt đối), để tự đúng cho cả model người lớn lẫn chibi.
+const FRAME = {
+  lookAtRatio: 0.72, // điểm camera nhìn vào, tính từ hông lên đầu
+  eyeRatio: 0.82, // camera đặt hơi cao hơn điểm nhìn một chút
+  spanRatio: 1.7, // chiều cao khung hình mong muốn (đủ đầu + nửa thân trên)
+  widthRatio: 0.9, // màn hình hẹp thì lùi thêm để không cắt ngang vai
+  fullBodyMargin: 1.2, // khi zoom ra hết cỡ: chiều cao khung hình so với chiều cao thật (chừa biên trên/dưới)
+};
 
 export class VRMAvatar {
   /** @param {HTMLCanvasElement} canvas */
@@ -51,6 +58,28 @@ export class VRMAvatar {
     this.onBeforeUpdate = null;
 
     this.clock = new THREE.Clock();
+    // Khung hình mặc định trước khi tải model (được tính lại chính xác trong _fitCameraToModel).
+    // bustFrame/fullFrame = null nghĩa là chưa có model, dùng frame/eyeOffset tạm này.
+    this.frame = { lookAtY: 1.22, span: 1.5 };
+    this.eyeOffset = 0.08;
+    this.bustFrame = null;
+    this.fullFrame = null;
+
+    // Zoom thủ công: zoom >= 1 phóng gần khung bán thân mặc định; zoom < 1 chuyển dần
+    // sang khung toàn thân (thấy hết chân) khi kéo ra hết cỡ. Xem _currentFrame().
+    this.zoom = 1;
+    this.minZoom = 0.5;
+    this.maxZoom = 2.5;
+    canvas.addEventListener(
+      'wheel',
+      (e) => {
+        if (!e.ctrlKey) return; // giữ Ctrl + cuộn chuột để zoom, tránh xung đột cuộn trang/pinch trackpad vẫn hoạt động vì trình duyệt tự gửi ctrlKey=true
+        e.preventDefault();
+        this._zoomBy(Math.exp(-e.deltaY * 0.0015));
+      },
+      { passive: false }
+    );
+
     this._resize = this._resize.bind(this);
     new ResizeObserver(this._resize).observe(canvas.parentElement);
     this._resize();
@@ -78,6 +107,7 @@ export class VRMAvatar {
 
     if (vrm.lookAt) vrm.lookAt.target = this.lookTarget;
     this._applyRestPose();
+    this._fitCameraToModel();
   }
 
   /** @param {'neutral'|'happy'|'sad'|'angry'|'surprised'|'relaxed'} name */
@@ -88,6 +118,11 @@ export class VRMAvatar {
   /** @param {number} v độ mở miệng 0..1 */
   setMouth(v) {
     this.mouthTarget = Math.max(0, Math.min(1, v));
+  }
+
+  /** Phóng to/thu nhỏ theo bước, dùng cho nút bấm (vd. 1 để zoom in, -1 để zoom out). */
+  zoomStep(step) {
+    this._zoomBy(Math.pow(1.2, step));
   }
 
   start() {
@@ -183,6 +218,65 @@ export class VRMAvatar {
     vrm.update(dt);
   }
 
+  /** Tính hai khung hình theo kích thước THẬT của model vừa tải, thay vì số mét
+   *  cố định — nhờ vậy vừa khít cho cả model người lớn lẫn model chibi như Paimon:
+   *  - bustFrame: bán thân (đầu + nửa thân trên), dùng khi zoom mặc định/phóng gần.
+   *  - fullFrame: toàn thân (từ chân tới đỉnh đầu), dùng khi kéo zoom ra hết cỡ.
+   *  _currentFrame() sẽ chuyển dần giữa hai khung này theo mức zoom hiện tại. */
+  _fitCameraToModel() {
+    const head = this._bone('head');
+    const hips = this._bone('hips');
+    if (!head || !hips) return;
+
+    this.vrm.update(0); // đảm bảo vị trí xương phản ánh đúng tư thế nghỉ vừa áp dụng
+    const headPos = new THREE.Vector3();
+    const hipsPos = new THREE.Vector3();
+    head.getWorldPosition(headPos);
+    hips.getWorldPosition(hipsPos);
+    const torsoSpan = Math.max(0.01, headPos.y - hipsPos.y);
+
+    // Bounding box thật của toàn bộ mesh (kể cả tóc/phụ kiện) để biết chính xác
+    // chân chạm đất ở đâu và đỉnh đầu cao tới đâu, thay vì suy đoán từ xương.
+    const box = new THREE.Box3().setFromObject(this.vrm.scene);
+    const feetY = box.min.y;
+    const headTopY = Math.max(box.max.y, headPos.y);
+    const totalHeight = Math.max(0.01, headTopY - feetY);
+
+    this.bustFrame = {
+      lookAtY: hipsPos.y + torsoSpan * FRAME.lookAtRatio,
+      span: torsoSpan * FRAME.spanRatio,
+    };
+    this.fullFrame = {
+      lookAtY: feetY + totalHeight * 0.5,
+      span: totalHeight * FRAME.fullBodyMargin,
+    };
+    this.eyeOffset = torsoSpan * (FRAME.eyeRatio - FRAME.lookAtRatio);
+
+    this.zoom = 1; // model mới thì quay về khung bán thân mặc định, bỏ zoom thủ công cũ
+    this._resize();
+  }
+
+  /** Nhân thêm hệ số zoom (factor > 1: phóng to, < 1: thu nhỏ), giữ trong khoảng cho phép. */
+  _zoomBy(factor) {
+    this.zoom = Math.min(this.maxZoom, Math.max(this.minZoom, this.zoom * factor));
+    this._resize();
+  }
+
+  /** Khung hình (điểm nhìn + chiều cao khung) ứng với mức zoom hiện tại.
+   *  zoom >= 1: giữ khung bán thân, chỉ tiến camera lại gần hơn.
+   *  zoom < 1: chuyển dần sang khung toàn thân khi kéo về minZoom. */
+  _currentFrame() {
+    if (!this.bustFrame) return this.frame;
+    if (this.zoom >= 1) {
+      return { lookAtY: this.bustFrame.lookAtY, span: this.bustFrame.span / this.zoom };
+    }
+    const t = (1 - this.zoom) / (1 - this.minZoom);
+    return {
+      lookAtY: this.bustFrame.lookAtY + (this.fullFrame.lookAtY - this.bustFrame.lookAtY) * t,
+      span: this.bustFrame.span + (this.fullFrame.span - this.bustFrame.span) * t,
+    };
+  }
+
   _resize() {
     const parent = this.canvas.parentElement;
     const w = parent.clientWidth || 1;
@@ -190,10 +284,15 @@ export class VRMAvatar {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
 
-    // Màn hình hẹp thì lùi camera ra để không cắt mất nhân vật
-    const distance = Math.max(CAMERA.minDistance, 1.3 / this.camera.aspect);
-    this.camera.position.set(0, CAMERA.y, distance);
-    this.camera.lookAt(0, CAMERA.lookAtY, 0);
+    const { lookAtY, span } = this._currentFrame();
+    const eyeY = lookAtY + this.eyeOffset;
+    const vFov = THREE.MathUtils.degToRad(this.camera.fov);
+    const distanceForHeight = span / (2 * Math.tan(vFov / 2));
+    // Màn hình hẹp thì lùi camera ra thêm để không cắt ngang nhân vật
+    const distance = Math.max(distanceForHeight, (distanceForHeight * FRAME.widthRatio) / this.camera.aspect);
+
+    this.camera.position.set(0, eyeY, distance);
+    this.camera.lookAt(0, lookAtY, 0);
     this.camera.updateProjectionMatrix();
   }
 }

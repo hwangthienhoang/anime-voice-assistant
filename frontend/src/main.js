@@ -13,6 +13,8 @@ const canvas = $('avatar');
 const logEl = $('log');
 const statusEl = $('status');
 const micBtn = $('mic');
+const zoomInBtn = $('zoom-in');
+const zoomOutBtn = $('zoom-out');
 const form = $('form');
 const input = $('input');
 const notice = $('model-notice');
@@ -112,6 +114,9 @@ micBtn.addEventListener('click', () => {
   if (speech.enabled) speech.stop();
   else speech.start();
 });
+
+zoomInBtn.addEventListener('click', () => avatar.zoomStep(1));
+zoomOutBtn.addEventListener('click', () => avatar.zoomStep(-1));
 
 if (!SpeechInput.supported) {
   micBtn.disabled = true;
