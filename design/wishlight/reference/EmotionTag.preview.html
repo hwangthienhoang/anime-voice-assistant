@@ -1,0 +1,13 @@
+<!-- @dsCard group="Status" height=64 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>EmotionTag — preview</title></head>
+<body>
+<div id="root" class="wl-row"></div>
+<script>
+  var W = window.Wishlight, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    ['neutral','happy','relaxed','sad','surprised','angry'].map(function (e) { return h(W.EmotionTag, { key: e, emotion: e }); })));
+</script>
+</body>
+</html>

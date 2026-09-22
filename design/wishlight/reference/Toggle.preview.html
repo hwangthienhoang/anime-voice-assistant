@@ -1,0 +1,16 @@
+<!-- @dsCard group="Settings" height=110 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Toggle — preview</title></head>
+<body>
+<div id="root" class="wl-col"></div>
+<script>
+  var W = window.Wishlight, h = React.createElement;
+  function Demo() { var s = React.useState(true), t = React.useState(false);
+    return h(React.Fragment, null,
+      h(W.Toggle, { checked: s[0], onChange: s[1], label: 'Hiện phụ đề song ngữ' }),
+      h(W.Toggle, { checked: t[0], onChange: t[1], label: 'Chế độ rảnh tay (tự nghe)' })); }
+  ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
+</script>
+</body>
+</html>

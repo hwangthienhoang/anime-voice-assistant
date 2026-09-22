@@ -1,0 +1,15 @@
+<!-- @dsCard group="Stage" height=260 subtitle="Khung thoại trên sân khấu 3D" -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>DialogueBox — preview</title></head>
+<body>
+<div class="wl-stage"><div id="root"></div></div>
+<script>
+  var W = window.Wishlight, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(W.DialogueBox, {
+    speaker: 'Bạn đồng hành', emotion: 'happy', auto: true,
+    text: 'Ê ê, nhà lữ hành! Hôm nay bạn về muộn quá đó nha. Có muốn kể mình nghe chuyện gì đã xảy ra không?',
+    subtitle: 'Hey traveler! You are late today. Want to tell me what happened?' }));
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+/* Wishlight tokens — sinh tự động từ tokens.json. Đừng sửa tay; sửa tokens.json rồi sinh lại. */
+
+:root, [data-theme="light"] {
+  --parchment: #ece5d8;
+  --parchment-raised: #f7f3eb;
+  --parchment-sunk: #e0d7c6;
+  --ink: #3b4255;
+  --ink-muted: #6b6152;
+  --gold: #d3bc8e;
+  --gold-strong: #7d6228;
+  --night: #1e2433;
+  --night-glass: rgba(22, 26, 38, 0.86);
+  --on-night: #ece5d8;
+  --on-night-muted: #b3aa98;
+  --action: #3b4255;
+  --on-action: #f7f3eb;
+  --line: #d3c6ad;
+  --line-strong: #7d6228;
+  --focus: #2f6fb0;
+  --danger: #ab3a28;
+  --state-listening: #2f8a78;
+  --state-thinking: #b7862a;
+  --state-speaking: #7d6228;
+  --emo-neutral: #a39d8f;
+  --emo-happy: #e9b949;
+  --emo-relaxed: #5fb4a2;
+  --emo-sad: #6f8fcf;
+  --emo-surprised: #a98ad6;
+  --emo-angry: #d4644f;
+  --shadow-card: 0 2px 8px rgba(59, 66, 85, 0.12);
+  --shadow-stage: 0 8px 32px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] {
+  --parchment: #1b1f2b;
+  --parchment-raised: #262c3d;
+  --parchment-sunk: #141824;
+  --ink: #ece5d8;
+  --ink-muted: #b3aa98;
+  --gold: #d3bc8e;
+  --gold-strong: #d3bc8e;
+  --night: #1e2433;
+  --night-glass: rgba(22, 26, 38, 0.9);
+  --on-night: #ece5d8;
+  --on-night-muted: #b3aa98;
+  --action: #d3bc8e;
+  --on-action: #1b1f2b;
+  --line: #353c52;
+  --line-strong: #6b7390;
+  --focus: #8fc3ff;
+  --danger: #ff8f7a;
+  --state-listening: #6fd0bb;
+  --state-thinking: #e9b949;
+  --state-speaking: #d3bc8e;
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --font-display: Philosopher, Georgia, serif;
+  --font-sans: Nunito, "Segoe UI", system-ui, sans-serif;
+}
+
+/* Kiểu chữ */
+.wl-text-display { font-family: var(--font-display); font-size: 32px; line-height: 40px; font-weight: 700; }
+.wl-text-title { font-family: var(--font-display); font-size: 22px; line-height: 28px; font-weight: 700; }
+.wl-text-speaker { font-family: var(--font-display); font-size: 18px; line-height: 24px; font-weight: 700; }
+.wl-text-dialogue { font-family: var(--font-sans); font-size: 18px; line-height: 28px; font-weight: 600; }
+.wl-text-body { font-family: var(--font-sans); font-size: 15px; line-height: 22px; font-weight: 500; }
+.wl-text-label { font-family: var(--font-sans); font-size: 14px; line-height: 20px; font-weight: 700; }
+.wl-text-caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 600; }

@@ -1,0 +1,15 @@
+<!-- @dsCard group="Chat" height=200 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>ConversationItem — preview</title></head>
+<body>
+<div id="root" class="wl-col" style="background:var(--parchment-sunk);max-width:280px;gap:4px"></div>
+<script>
+  var W = window.Wishlight, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(W.ConversationItem, { title: 'Kế hoạch cuối tuần', time: '21:03', snippet: 'Tối nay gợi ý mình món gì đi?', current: true }),
+    h(W.ConversationItem, { title: 'Học tiếng Nhật', time: 'Hôm qua', snippet: 'Mình ôn lại bảng Katakana nhé…' }),
+    h(W.ConversationItem, { title: 'Chào buổi sáng', time: 'T2', snippet: 'Dậy chưa đó, sâu ngủ?' })));
+</script>
+</body>
+</html>

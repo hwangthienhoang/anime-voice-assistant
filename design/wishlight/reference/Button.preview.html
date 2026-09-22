@@ -1,0 +1,17 @@
+<!-- @dsCard group="Actions" height=80 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Button — preview</title></head>
+<body>
+<div id="root" class="wl-row"></div>
+<script>
+  var W = window.Wishlight, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(W.Button, { variant: 'primary' }, 'Bắt đầu trò chuyện'),
+    h(W.Button, { variant: 'secondary', icon: 'check' }, 'Lưu persona'),
+    h(W.Button, { variant: 'ghost', icon: null }, 'Để sau'),
+    h(W.Button, { variant: 'danger', icon: 'trash' }, 'Xóa trí nhớ'),
+    h(W.Button, { variant: 'primary', disabled: true }, 'Đang kết nối')));
+</script>
+</body>
+</html>
