@@ -28,11 +28,12 @@ export class AudioPlayer {
   }
 
   /** Phát xong (hoặc bị stop) thì promise mới resolve. */
-  async play(arrayBuffer) {
+  async play(arrayBuffer, { onDecoded } = {}) {
     await this._ensureContext();
     this.stop();
 
     const decoded = await this.ctx.decodeAudioData(arrayBuffer);
+    onDecoded?.(decoded.duration);
     const source = this.ctx.createBufferSource();
     source.buffer = decoded;
     source.connect(this.analyser);

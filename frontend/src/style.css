@@ -1,14 +1,4 @@
 :root {
-  --night: #15173a;
-  --dusk: #2b2a5e;
-  --mist: #cfcaff;
-  --sakura: #ff9db8;
-  --paper: #f6f4ff;
-  --ink: #0f1030;
-  --ink-soft: #55567d;
-  --line: #ddd9f5;
-
-  --font: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --level: 0; /* 0..1, cập nhật từ JS theo âm lượng */
 }
 
@@ -23,18 +13,26 @@ body {
 }
 
 body {
-  font-family: var(--font);
+  font-family: var(--font-sans);
   color: var(--ink);
   background: var(--night);
   -webkit-font-smoothing: antialiased;
 }
 
 .app {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: 1fr;
   height: 100%;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow: hidden;
+}
+
+@media (min-width: 1200px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr) 560px;
+  }
 }
 
 /* ---------- Sân khấu ---------- */
@@ -43,8 +41,8 @@ body {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(60% 45% at 50% 42%, rgba(207, 202, 255, 0.28), transparent 70%),
-    linear-gradient(180deg, var(--dusk) 0%, var(--night) 100%);
+    radial-gradient(60% 45% at 50% 42%, rgba(211, 188, 142, 0.16), transparent 70%),
+    linear-gradient(180deg, #262c3d 0%, var(--night) 100%);
 }
 
 /* Vầng trăng lớn phía sau nhân vật, gợi phông nền anime */
@@ -57,8 +55,8 @@ body {
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f6f4ff 0%, var(--mist) 55%, #a9a2ee 100%);
-  opacity: 0.16;
+  background: radial-gradient(circle at 35% 30%, #f7f3eb 0%, var(--gold) 55%, #8a7038 100%);
+  opacity: 0.14;
   pointer-events: none;
 }
 
@@ -76,7 +74,7 @@ body {
   top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .zoom-btn {
@@ -85,19 +83,19 @@ body {
   border: 0;
   border-radius: 50%;
   color: var(--ink);
-  background: rgba(246, 244, 255, 0.85);
-  backdrop-filter: blur(6px);
+  background: var(--parchment-raised);
   font: inherit;
   font-size: 19px;
   line-height: 1;
   cursor: pointer;
   display: grid;
   place-items: center;
+  box-shadow: var(--shadow-stage);
   transition: background 0.2s, transform 0.15s;
 }
 
 .zoom-btn:hover {
-  background: var(--paper);
+  background: var(--parchment);
   transform: translateY(-1px);
 }
 
@@ -105,11 +103,11 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 28px;
+  bottom: var(--space-6);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-4);
   pointer-events: none;
 }
 
@@ -117,57 +115,17 @@ body {
   pointer-events: auto;
 }
 
-.status {
-  margin: 0;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 13px;
-  color: var(--paper);
-  background: rgba(15, 16, 48, 0.55);
-  backdrop-filter: blur(6px);
-  transition: opacity 0.2s;
+/* DialogueBox: đặt trong stage-bottom, rộng tối đa 880px, căn giữa trong sân khấu */
+#dialogue-box {
+  width: min(880px, calc(100% - var(--space-8)));
 }
 
-.mic {
-  position: relative;
-  width: 68px;
-  height: 68px;
-  border: 0;
-  border-radius: 50%;
-  color: var(--ink);
-  background: var(--paper);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  transition: background 0.2s, color 0.2s, transform 0.15s;
+#dialogue-box[hidden] {
+  display: none;
 }
 
-.mic::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2px solid var(--sakura);
-  opacity: 0;
+.wl-mic::after {
   transform: scale(calc(1 + var(--level) * 0.35));
-  transition: opacity 0.2s;
-}
-
-.mic:hover {
-  transform: translateY(-2px);
-}
-
-.mic[aria-pressed='true'] {
-  background: var(--sakura);
-}
-
-.mic[aria-pressed='true']::after {
-  opacity: 0.9;
-}
-
-.mic:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .notice {
@@ -176,12 +134,12 @@ body {
   top: 44%;
   transform: translate(-50%, -50%);
   width: min(360px, 84%);
-  padding: 22px;
-  border-radius: 18px;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
   text-align: center;
-  color: var(--paper);
-  background: rgba(15, 16, 48, 0.62);
-  backdrop-filter: blur(8px);
+  color: var(--ink);
+  background: var(--parchment-raised);
+  box-shadow: var(--shadow-stage);
 }
 
 .notice[hidden] {
@@ -190,50 +148,126 @@ body {
 
 .notice-title {
   margin: 0 0 6px;
-  font-size: 17px;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
 }
 
 .notice-body {
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-4);
   font-size: 14px;
   line-height: 1.55;
-  color: var(--mist);
+  color: var(--ink-muted);
+}
+
+.notice .wl-btn {
+  justify-content: center;
 }
 
 code {
   padding: 1px 6px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  background: var(--parchment-sunk);
   font-size: 0.92em;
 }
 
-/* ---------- Bảng hội thoại ---------- */
+/* ---------- ChatPage ---------- */
 
-.panel {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: var(--paper);
-  border-left: 1px solid var(--line);
+.chatpage {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  z-index: 5;
+  background: var(--parchment);
+  box-shadow: var(--shadow-stage);
+  transform: translateX(100%);
+  transition: transform 0.2s ease-out;
 }
 
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 20px 12px;
+.chatpage-open {
+  transform: translateX(0);
 }
 
-.panel-head {
-  gap: 8px;
+.chatpage .wl-page {
+  height: 100%;
+  grid-template-columns: 200px 1fr;
 }
 
-.panel-head h1 {
-  flex: 1;
+.chatpage .wl-main-head {
+  flex-wrap: wrap;
+  row-gap: var(--space-2);
+}
+
+.sidebar-toggle {
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .chatpage {
+    position: static;
+    width: auto;
+    transform: none;
+    box-shadow: none;
+    border-left: 1px solid var(--line);
+  }
+
+  .chatpage .wl-page {
+    grid-template-columns: 260px 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .chatpage {
+    width: 100vw;
+  }
+
+  .chatpage .wl-page {
+    grid-template-columns: 1fr;
+  }
+
+  .chatpage .wl-side {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 240px;
+    z-index: 2;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
+    box-shadow: var(--shadow-card);
+  }
+
+  .chatpage.sidebar-open .wl-side {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
+  }
+}
+
+/* Tin nhắn "đang chép lời" của user, opacity giảm cho tới khi có câu hoàn chỉnh */
+.wl-msg-interim {
+  opacity: 0.6;
+}
+
+/* Lỗi trong luồng chat: không chỉ dựa vào màu, có chữ "Lỗi:" ở đầu */
+.chat-error {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+  text-align: center;
+  color: var(--danger);
+  font: 600 13px/18px var(--font-sans);
+}
+
+/* EmotionTag dùng làm nút demo: bỏ style mặc định của <button>, giữ nguyên hình EmotionTag */
+.demo-emo {
+  all: unset;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+}
+
+.demo-emo:hover .wl-emo {
+  box-shadow: inset 0 0 0 1.5px var(--line-strong);
 }
 
 /* ---------- Menu demo ---------- */
@@ -244,7 +278,7 @@ code {
   gap: 14px;
   padding: 4px 20px 16px;
   border-bottom: 1px solid var(--line);
-  background: rgba(43, 42, 94, 0.04);
+  background: var(--parchment-sunk);
 }
 
 .demo-row {
@@ -265,10 +299,10 @@ code {
 .demo-label {
   margin: 0;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ink-soft);
+  color: var(--ink-muted);
 }
 
 .demo-grid {
@@ -277,149 +311,21 @@ code {
   gap: 6px;
 }
 
-.demo-grid .btn {
-  padding: 7px 12px;
-  font-size: 13px;
-}
-
-.demo-grid .btn[aria-pressed='true'] {
-  color: var(--paper);
-  background: var(--dusk);
-  border-color: transparent;
-}
-
-.log {
-  flex: 1;
-  min-height: 0;
-  margin: 0;
-  padding: 8px 20px 16px;
-  list-style: none;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.msg {
-  max-width: 88%;
-  padding: 10px 14px;
-  font-size: 15px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.msg.user {
-  align-self: flex-end;
-  color: var(--paper);
-  background: var(--dusk);
-  border-radius: 18px 18px 4px 18px;
-}
-
-.msg.assistant {
-  align-self: flex-start;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 18px 18px 18px 4px;
-}
-
-.msg.interim {
-  opacity: 0.55;
-}
-
-.msg.error {
-  align-self: stretch;
-  max-width: 100%;
-  font-size: 13px;
-  color: #8a1f3d;
-  background: #ffe7ee;
-  border-radius: 12px;
-}
-
-.composer {
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px 16px;
-  border-top: 1px solid var(--line);
-}
-
-.composer input {
-  flex: 1;
-  min-width: 0;
-  padding: 11px 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font: inherit;
-  font-size: 15px;
-  background: #fff;
-  color: var(--ink);
-}
-
-/* ---------- Nút ---------- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 16px;
-  border: 0;
-  border-radius: 999px;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.btn-solid {
-  color: var(--paper);
-  background: var(--dusk);
-}
-
-.btn-solid:hover {
-  background: var(--night);
-}
-
-.notice .btn-solid {
-  color: var(--ink);
-  background: var(--sakura);
-}
-
-.btn-quiet {
-  padding: 6px 12px;
-  color: var(--ink-soft);
-  background: transparent;
-  border: 1px solid var(--line);
-}
-
-.btn-quiet:hover {
-  color: var(--ink);
-  border-color: var(--mist);
+.demo-grid .wl-btn[aria-pressed='true'] {
+  color: var(--on-action);
+  background: var(--action);
 }
 
 :focus-visible {
-  outline: 2px solid var(--sakura);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 /* ---------- Di động ---------- */
 
-@media (max-width: 860px) {
-  .app {
-    grid-template-columns: 1fr;
-    grid-template-rows: 58% 42%;
-  }
-
-  .panel {
-    border-left: 0;
-    border-top: 1px solid var(--line);
-  }
-
+@media (max-width: 720px) {
   .stage-bottom {
-    bottom: 14px;
-  }
-
-  .mic {
-    width: 58px;
-    height: 58px;
+    bottom: var(--space-3);
   }
 }
 

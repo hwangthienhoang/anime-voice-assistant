@@ -1,3 +1,5 @@
+import './styles/tokens.css';
+import './styles/components.css';
 import './style.css';
 import { VRMAvatar } from './avatar/VRMAvatar.js';
 import { AudioPlayer } from './audio/AudioPlayer.js';
@@ -7,63 +9,377 @@ import { DemoSequence } from './avatar/DemoSequence.js';
 
 const DEFAULT_MODEL_URL = '/models/avatar.vrm';
 const SPEECH_LANG = 'vi-VN';
+const SPEAKER_NAME = 'Hana';
+const CONVERSATION_TITLE = 'Trò chuyện với Hana';
+const DIALOGUE_HIDE_MS = 6000;
+const CHAT_PAGE_WIDE_QUERY = '(min-width: 1200px)';
+const SIDEBAR_DRAWER_QUERY = '(max-width: 720px)';
+const EMOTION_LABEL = {
+  neutral: 'Bình thường',
+  happy: 'Vui',
+  relaxed: 'Thư thái',
+  sad: 'Buồn',
+  surprised: 'Ngạc nhiên',
+  angry: 'Dỗi',
+};
+const MIC_LABEL = { idle: 'Nhấn để nói', listening: 'Đang nghe…', thinking: 'Đang nghĩ…', speaking: 'Đang nói' };
+const MIC_PATH = 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Zm-6 9a6 6 0 0 0 12 0M12 18v3';
+const WAVE_PATH = 'M4 12h1M8 8v8M12 5v14M16 8v8M20 12h0';
+const STAR_PATH =
+  'M12 2 C12.6 8 16 11.4 22 12 C16 12.6 12.6 16 12 22 C11.4 16 8 12.6 2 12 C8 11.4 11.4 8 12 2 Z';
+const PLAY_PATH = 'M8 5v14l11-7L8 5Z';
 
 // ---------- DOM ----------
 const $ = (id) => document.getElementById(id);
 const canvas = $('avatar');
-const logEl = $('log');
-const statusEl = $('status');
-const micBtn = $('mic');
 const zoomInBtn = $('zoom-in');
 const zoomOutBtn = $('zoom-out');
-const form = $('form');
 const input = $('input');
+const sendBtn = $('send-btn');
 const notice = $('model-notice');
+
+const chatpageEl = $('chatpage');
+const chatCloseBtn = $('chatpage-close');
+const sidebarToggleBtn = $('sidebar-toggle');
+const convListEl = $('conversation-list');
+const threadEl = $('thread');
+const composerMicBtn = $('composer-mic');
+
+const dlgBox = $('dialogue-box');
+const dlgNameEl = $('dlg-name');
+const dlgTextEl = $('dlg-text');
+const dlgEmotionEl = $('dlg-emotion');
+const dlgEmotionDotEl = dlgEmotionEl.querySelector('.wl-emo-dot');
+const dlgEmotionLabelEl = $('dlg-emotion-label');
+const dlgAutoBtn = $('dlg-auto');
+const dlgLogBtn = $('dlg-log');
+const dlgSkipBtn = $('dlg-skip');
+dlgNameEl.textContent = SPEAKER_NAME;
+
+const micBtn = $('mic');
+const micLabelEl = $('mic-label');
+const micButtons = [micBtn, composerMicBtn];
 
 // ---------- Khởi tạo các khối ----------
 const avatar = new VRMAvatar(canvas);
 if (import.meta.env.DEV) window.__avatar = avatar; // chỉ để debug khi dev
 const player = new AudioPlayer();
+const replayPlayer = new AudioPlayer(); // phát lại giọng TTS đã lưu, tách khỏi player điều khiển khẩu hình
 const history = []; // [{role, content}]
 let busy = false;
 let resetEmotionTimer = null;
-let interimEl = null;
+let interimBubbleEl = null;
+let typingBubbleEl = null;
 
 const speech = new SpeechInput({
   lang: SPEECH_LANG,
   onFinal: (text) => handleUserText(text),
   onInterim: (text) => showInterim(text),
   onStateChange: (active) => {
-    micBtn.setAttribute('aria-pressed', String(active));
-    micBtn.setAttribute('aria-label', active ? 'Tắt micro' : 'Bật micro');
-    if (!busy) setStatus(active ? 'Đang nghe…' : 'Sẵn sàng');
+    dlgAutoBtn.setAttribute('aria-pressed', String(active));
+    if (!busy) setMicState(active ? 'listening' : 'idle');
   },
-  onError: (message) => addMessage('error', message),
+  onError: (message) => appendError(message),
 });
 
-// ---------- Giao diện ----------
-function setStatus(text) {
-  statusEl.textContent = text;
+// ---------- Helpers ----------
+function formatTime(date) {
+  return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
 
-function addMessage(kind, text) {
-  const li = document.createElement('li');
-  li.className = `msg ${kind}`;
-  li.textContent = text;
-  logEl.appendChild(li);
-  logEl.scrollTop = logEl.scrollHeight;
-  return li;
+function formatDuration(sec) {
+  const s = Math.max(0, Math.round(sec));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function svgIcon(path, { fill = true } = {}) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  if (fill) {
+    svg.setAttribute('fill', 'currentColor');
+    svg.setAttribute('stroke', 'none');
+  } else {
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+  }
+  const p = document.createElementNS(ns, 'path');
+  p.setAttribute('d', path);
+  svg.appendChild(p);
+  return svg;
+}
+
+function buildEmotionTagEl(emotion) {
+  const span = document.createElement('span');
+  span.className = 'wl-emo';
+  const dot = document.createElement('span');
+  dot.className = 'wl-emo-dot';
+  dot.style.background = `var(--emo-${emotion})`;
+  span.appendChild(dot);
+  span.appendChild(document.createTextNode(EMOTION_LABEL[emotion] ?? emotion));
+  return span;
+}
+
+// ---------- MicButton ----------
+let micState = 'idle';
+
+function setMicState(state) {
+  micState = state;
+  for (const btn of micButtons) {
+    btn.className = `wl-mic wl-mic-${state}`;
+    btn.setAttribute('aria-pressed', String(state === 'listening'));
+    btn.setAttribute('aria-label', MIC_LABEL[state]);
+    btn.querySelector('path').setAttribute('d', state === 'speaking' ? WAVE_PATH : MIC_PATH);
+  }
+  micLabelEl.textContent = MIC_LABEL[state];
+}
+
+/** Chữ trạng thái chung, không thuộc bốn trạng thái mic (tải model, demo…). */
+function setStatus(text) {
+  micLabelEl.textContent = text;
+}
+
+function handleMicClick() {
+  if (micState === 'speaking') {
+    // Ngắt lời: dừng audio đang phát rồi bắt đầu nghe ngay
+    player.stop();
+    speech.start();
+    return;
+  }
+  if (speech.enabled) speech.stop();
+  else speech.start();
+}
+
+micBtn.addEventListener('click', handleMicClick);
+composerMicBtn.addEventListener('click', handleMicClick);
+
+if (!SpeechInput.supported) {
+  micBtn.disabled = true;
+  micBtn.title = 'Trình duyệt này chưa hỗ trợ nhận diện giọng nói. Hãy dùng Chrome hoặc Edge.';
+  composerMicBtn.disabled = true;
+  composerMicBtn.title = micBtn.title;
+}
+
+// ---------- DialogueBox ----------
+let dlgTypeTimer = null;
+let dlgHideTimer = null;
+let dlgFullText = '';
+let dlgCaretEl = null;
+
+function setDialogueEmotion(emotion) {
+  if (!emotion || emotion === 'neutral') {
+    dlgEmotionEl.hidden = true;
+    return;
+  }
+  dlgEmotionEl.hidden = false;
+  dlgEmotionDotEl.style.background = `var(--emo-${emotion})`;
+  dlgEmotionLabelEl.textContent = EMOTION_LABEL[emotion] ?? emotion;
+}
+
+function setDialogueDone(done) {
+  if (!done) {
+    dlgCaretEl?.remove();
+    return;
+  }
+  if (!dlgCaretEl) {
+    dlgCaretEl = svgIcon(STAR_PATH);
+    dlgCaretEl.classList.add('wl-dlg-caret');
+  }
+  dlgTextEl.appendChild(dlgCaretEl);
+}
+
+/** Hiện lời thoại, chữ chạy từng ký tự trong khoảng `durationSec` (thời lượng audio TTS). */
+function showDialogue(text, emotion, durationSec) {
+  clearTimeout(dlgTypeTimer);
+  clearTimeout(dlgHideTimer);
+  dlgBox.hidden = false;
+  dlgFullText = text;
+  setDialogueEmotion(emotion);
+  setDialogueDone(false);
+
+  const chars = Array.from(text);
+  dlgTextEl.textContent = '';
+  const totalMs = Math.max(400, (durationSec || chars.length * 0.05) * 1000);
+  const stepMs = totalMs / Math.max(1, chars.length);
+  let i = 0;
+  const tick = () => {
+    i += 1;
+    dlgTextEl.textContent = chars.slice(0, i).join('');
+    if (i >= chars.length) {
+      setDialogueDone(true);
+      return;
+    }
+    dlgTypeTimer = setTimeout(tick, stepMs);
+  };
+  tick();
+}
+
+function revealDialogueNow() {
+  clearTimeout(dlgTypeTimer);
+  if (!dlgFullText) return;
+  dlgTextEl.textContent = dlgFullText;
+  setDialogueDone(true);
+}
+
+function scheduleDialogueHide() {
+  clearTimeout(dlgHideTimer);
+  dlgHideTimer = setTimeout(() => {
+    dlgBox.hidden = true;
+  }, DIALOGUE_HIDE_MS);
+}
+
+dlgBox.querySelector('.wl-dlg-ctrls').addEventListener('click', (e) => e.stopPropagation());
+dlgBox.addEventListener('click', () => revealDialogueNow());
+dlgSkipBtn.addEventListener('click', () => player.stop());
+dlgAutoBtn.addEventListener('click', () => handleMicClick());
+dlgLogBtn.addEventListener('click', () => openChatPage());
+
+// ---------- ChatPage ----------
+const chatWideMql = window.matchMedia(CHAT_PAGE_WIDE_QUERY);
+const sidebarDrawerMql = window.matchMedia(SIDEBAR_DRAWER_QUERY);
+
+function openChatPage() {
+  chatpageEl.classList.add('chatpage-open');
+  input.focus();
+}
+
+function closeChatPage() {
+  chatpageEl.classList.remove('chatpage-open');
+  chatpageEl.classList.remove('sidebar-open');
+  sidebarToggleBtn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleChatPage() {
+  if (chatpageEl.classList.contains('chatpage-open')) closeChatPage();
+  else openChatPage();
+}
+
+chatCloseBtn.addEventListener('click', () => closeChatPage());
+
+sidebarToggleBtn.addEventListener('click', () => {
+  const open = chatpageEl.classList.toggle('sidebar-open');
+  sidebarToggleBtn.setAttribute('aria-expanded', String(open));
+});
+
+document.querySelector('.stage').addEventListener('click', () => {
+  if (!chatWideMql.matches && chatpageEl.classList.contains('chatpage-open')) closeChatPage();
+});
+
+// ---------- Sidebar: một cuộc trò chuyện duy nhất ----------
+const convItemEl = document.createElement('button');
+convItemEl.type = 'button';
+convItemEl.className = 'wl-conv';
+convItemEl.setAttribute('aria-current', 'true');
+convItemEl.appendChild(svgIcon(STAR_PATH)).classList.add('wl-conv-star');
+const convMainEl = document.createElement('span');
+convMainEl.className = 'wl-conv-main';
+const convTitleEl = document.createElement('span');
+convTitleEl.className = 'wl-conv-title';
+const convTitleTextEl = document.createElement('span');
+convTitleTextEl.textContent = CONVERSATION_TITLE;
+const convTimeEl = document.createElement('span');
+convTimeEl.className = 'wl-conv-time';
+convTitleEl.append(convTitleTextEl, convTimeEl);
+const convSnipEl = document.createElement('span');
+convSnipEl.className = 'wl-conv-snip';
+convSnipEl.style.display = 'block';
+convSnipEl.textContent = 'Chưa có tin nhắn nào';
+convMainEl.append(convTitleEl, convSnipEl);
+convItemEl.appendChild(convMainEl);
+convItemEl.addEventListener('click', () => {
+  if (sidebarDrawerMql.matches) {
+    chatpageEl.classList.remove('sidebar-open');
+    sidebarToggleBtn.setAttribute('aria-expanded', 'false');
+  }
+  input.focus();
+});
+convListEl.appendChild(convItemEl);
+
+function updateConversationPreview(text) {
+  convSnipEl.textContent = text;
+  convTimeEl.textContent = formatTime(new Date());
+}
+
+// ---------- ChatBubble / luồng tin ----------
+function appendBubble({ from, text, emotion, typing = false }) {
+  const el = document.createElement('div');
+  el.className = `wl-msg wl-msg-${from}`;
+
+  const meta = document.createElement('div');
+  meta.className = 'wl-msg-meta';
+  if (from === 'ai') {
+    const nameEl = document.createElement('span');
+    nameEl.className = 'wl-msg-name';
+    nameEl.textContent = SPEAKER_NAME;
+    meta.appendChild(nameEl);
+  }
+  if (emotion && emotion !== 'neutral') meta.appendChild(buildEmotionTagEl(emotion));
+  if (!typing) {
+    const timeEl = document.createElement('span');
+    timeEl.textContent = formatTime(new Date());
+    meta.appendChild(timeEl);
+  }
+  if (meta.childNodes.length) el.appendChild(meta);
+
+  if (typing) {
+    const body = document.createElement('div');
+    body.className = 'wl-msg-body';
+    body.setAttribute('aria-label', 'Đang soạn');
+    const typingEl = document.createElement('span');
+    typingEl.className = 'wl-typing';
+    typingEl.append(document.createElement('i'), document.createElement('i'), document.createElement('i'));
+    body.appendChild(typingEl);
+    el.appendChild(body);
+  } else {
+    const body = document.createElement('p');
+    body.className = 'wl-msg-body';
+    body.textContent = text;
+    el.appendChild(body);
+  }
+
+  threadEl.appendChild(el);
+  threadEl.scrollTop = threadEl.scrollHeight;
+  return el;
+}
+
+function attachVoiceReplay(bubbleEl, arrayBuffer, durationSec) {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'wl-voice';
+  btn.appendChild(svgIcon(PLAY_PATH));
+  btn.appendChild(document.createTextNode(`Phát lại · ${formatDuration(durationSec)}`));
+  btn.addEventListener('click', () => replayPlayer.play(arrayBuffer.slice(0)));
+  bubbleEl.appendChild(btn);
 }
 
 function showInterim(text) {
-  if (!interimEl) interimEl = addMessage('user interim', text);
-  interimEl.textContent = text;
-  logEl.scrollTop = logEl.scrollHeight;
+  if (!interimBubbleEl) {
+    interimBubbleEl = document.createElement('div');
+    interimBubbleEl.className = 'wl-msg wl-msg-user wl-msg-interim';
+    const body = document.createElement('p');
+    body.className = 'wl-msg-body';
+    interimBubbleEl.appendChild(body);
+    threadEl.appendChild(interimBubbleEl);
+  }
+  interimBubbleEl.querySelector('.wl-msg-body').textContent = text;
+  threadEl.scrollTop = threadEl.scrollHeight;
 }
 
 function clearInterim() {
-  interimEl?.remove();
-  interimEl = null;
+  interimBubbleEl?.remove();
+  interimBubbleEl = null;
+}
+
+function appendError(text) {
+  const p = document.createElement('p');
+  p.className = 'chat-error';
+  p.textContent = `Lỗi: ${text}`;
+  threadEl.appendChild(p);
+  threadEl.scrollTop = threadEl.scrollHeight;
 }
 
 // ---------- Luồng hội thoại ----------
@@ -73,61 +389,86 @@ async function handleUserText(rawText) {
 
   busy = true;
   clearTimeout(resetEmotionTimer);
+  clearTimeout(dlgHideTimer);
   player.stop();
   speech.pause(); // tránh micro thu lại giọng của avatar
   clearInterim();
 
-  addMessage('user', text);
+  appendBubble({ from: 'user', text });
+  updateConversationPreview(text);
   history.push({ role: 'user', content: text });
+  typingBubbleEl = appendBubble({ from: 'ai', typing: true });
 
   try {
-    setStatus('Đang suy nghĩ…');
+    setMicState('thinking');
     avatar.playGesture('think');
     const { reply, emotion } = await chat(history);
     history.push({ role: 'assistant', content: reply });
-    addMessage('assistant', reply);
+
+    typingBubbleEl?.remove();
+    typingBubbleEl = null;
+    const bubbleEl = appendBubble({ from: 'ai', text: reply, emotion });
+    updateConversationPreview(reply);
     avatar.setEmotion(emotion);
 
-    setStatus('Đang nói… (nhấn Esc để dừng)');
+    setMicState('speaking');
     try {
       const audio = await speak(reply);
-      await player.play(audio);
+      const audioForReplay = audio.slice(0);
+      await player.play(audio, {
+        onDecoded: (duration) => {
+          showDialogue(reply, emotion, duration);
+          attachVoiceReplay(bubbleEl, audioForReplay, duration);
+        },
+      });
     } catch (err) {
-      addMessage('error', `Không phát được giọng nói: ${err.message}`);
+      showDialogue(reply, emotion);
+      appendError(`Không phát được giọng nói: ${err.message}`);
     }
+    revealDialogueNow();
+    scheduleDialogueHide();
   } catch (err) {
+    typingBubbleEl?.remove();
+    typingBubbleEl = null;
     history.pop(); // bỏ tin nhắn vừa gửi để lịch sử không bị lệch lượt
-    addMessage('error', err.message);
+    appendError(err.message);
   } finally {
     busy = false;
     resetEmotionTimer = setTimeout(() => avatar.setEmotion('neutral'), 1200);
-    setStatus(speech.enabled ? 'Đang nghe…' : 'Sẵn sàng');
+    setMicState(speech.enabled ? 'listening' : 'idle');
     speech.resume();
   }
 }
 
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
+function submitComposer() {
   const text = input.value;
   input.value = '';
   handleUserText(text);
-});
+}
 
-micBtn.addEventListener('click', () => {
-  if (speech.enabled) speech.stop();
-  else speech.start();
+sendBtn.addEventListener('click', submitComposer);
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComposer();
+  }
 });
 
 zoomInBtn.addEventListener('click', () => avatar.zoomStep(1));
 zoomOutBtn.addEventListener('click', () => avatar.zoomStep(-1));
 
-if (!SpeechInput.supported) {
-  micBtn.disabled = true;
-  micBtn.title = 'Trình duyệt này chưa hỗ trợ nhận diện giọng nói. Hãy dùng Chrome hoặc Edge.';
-}
-
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && player.playing) player.stop();
+  if (e.key === 'Escape') {
+    if (player.playing) {
+      player.stop();
+      return;
+    }
+    if (chatpageEl.classList.contains('chatpage-open')) closeChatPage();
+    return;
+  }
+  const target = e.target;
+  const isTypingTarget = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
+  if (!isTypingTarget && e.key.toLowerCase() === 'l') toggleChatPage();
 });
 
 // ---------- Avatar ----------
@@ -146,11 +487,12 @@ let fakeTalkT0 = 0;
 const demo = new DemoSequence(avatar, {
   onStep: (label) => {
     setStatus(`Demo: ${label}`);
-    addMessage('assistant', label);
+    appendBubble({ from: 'ai', text: label });
+    updateConversationPreview(label);
   },
   onEnd: () => {
     demoAutoBtn.textContent = '▶ Auto (chuỗi ~21s)';
-    setStatus('Sẵn sàng');
+    setMicState(speech.enabled ? 'listening' : 'idle');
   },
 });
 
@@ -180,7 +522,7 @@ demoToggle.addEventListener('click', () => {
   const show = demoPanel.hidden;
   demoPanel.hidden = !show;
   demoToggle.setAttribute('aria-expanded', String(show));
-  demoToggle.textContent = show ? 'Ẩn demo ▴' : 'Xem demo ▾';
+  demoToggle.textContent = show ? 'Ẩn demo' : 'Xem demo';
 });
 
 demoAutoBtn.addEventListener('click', () => {
@@ -212,7 +554,7 @@ demoPanel.addEventListener('click', (e) => {
 if (new URLSearchParams(location.search).has('demo')) {
   demoPanel.hidden = false;
   demoToggle.setAttribute('aria-expanded', 'true');
-  demoToggle.textContent = 'Ẩn demo ▴';
+  demoToggle.textContent = 'Ẩn demo';
   setTimeout(() => demoAutoBtn.click(), 1500);
 }
 
@@ -229,11 +571,11 @@ async function loadModel(url, { quiet = false } = {}) {
     setStatus('Đang tải nhân vật…');
     await avatar.load(url);
     notice.hidden = true;
-    setStatus(speech.enabled ? 'Đang nghe…' : 'Sẵn sàng');
+    setMicState(speech.enabled ? 'listening' : 'idle');
     return true;
   } catch (err) {
     console.warn('Không tải được model VRM:', err);
-    if (!quiet) addMessage('error', `Không tải được nhân vật: ${err.message}`);
+    if (!quiet) appendError(`Không tải được nhân vật: ${err.message}`);
     setStatus('Chưa có nhân vật');
     return false;
   }
