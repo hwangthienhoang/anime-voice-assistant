@@ -225,10 +225,67 @@ code {
   padding: 18px 20px 12px;
 }
 
+.panel-head {
+  gap: 8px;
+}
+
 .panel-head h1 {
+  flex: 1;
   margin: 0;
   font-size: 20px;
   font-weight: 600;
+}
+
+/* ---------- Menu demo ---------- */
+
+.demo-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 4px 20px 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(43, 42, 94, 0.04);
+}
+
+.demo-row {
+  display: flex;
+}
+
+.demo-auto {
+  flex: 1;
+  justify-content: center;
+}
+
+.demo-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.demo-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.demo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.demo-grid .btn {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.demo-grid .btn[aria-pressed='true'] {
+  color: var(--paper);
+  background: var(--dusk);
+  border-color: transparent;
 }
 
 .log {

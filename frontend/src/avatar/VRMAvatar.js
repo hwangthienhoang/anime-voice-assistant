@@ -1,12 +1,16 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
+import { IdleMotion, noise } from './IdleMotion.js';
+import { VRMLookAtQuaternionProxy } from '@pixiv/three-vrm-animation';
+import { AnimationController } from './AnimationController.js';
 
 // Các cảm xúc trùng tên với expression preset của VRM
 const EMOTIONS = ['happy', 'sad', 'angry', 'surprised', 'relaxed'];
 
-// Góc hạ tay khỏi tư thế chữ T (radian). Nếu model của bạn bị giơ tay lên, đổi dấu của hằng số này.
-const ARM_DOWN = 1.2;
+// Hệ số khuếch đại vật lý xương phụ (tóc, phụ kiện) sau khi tải model, vì nhiều
+// file VRM để gravityPower/dragForce rất thấp nên gần như không thấy đung đưa.
+const SPRING_BONE_BOOST = { gravityScale: 2.5, gravityBase: 0.05, dragScale: 0.6 };
 
 // Khung hình bán thân, tính theo TỈ LỆ so với chiều cao hông→đầu của model
 // (không phải mét tuyệt đối), để tự đúng cho cả model người lớn lẫn chibi.
@@ -39,9 +43,12 @@ export class VRMAvatar {
     this.scene.add(this.lookTarget);
     this.pointer = { x: 0, y: 0 };
     this.pointerSmooth = { x: 0, y: 0 };
+    this.lastPointerAt = -100; // lần cuối chuột di chuyển (giây, theo clock)
+    this.glance = { x: 0, y: 0, until: 0 }; // điểm liếc ngẫu nhiên khi không có chuột
     window.addEventListener('pointermove', (e) => {
       this.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.pointer.y = -((e.clientY / window.innerHeight) * 2 - 1);
+      this.lastPointerAt = this.clock.elapsedTime;
     });
 
     // Trạng thái biểu cảm / miệng
@@ -53,6 +60,14 @@ export class VRMAvatar {
     // Chớp mắt
     this.blinkTimer = 2;
     this.blinkT = -1;
+    this.blinkDouble = false;
+    this.motion = null;
+    this.torsoSpan = 0.5;
+    this.speakingUntil = 0; // giây (clock): còn coi là đang nói tới thời điểm này
+
+    // Thư viện animation .vrma (dùng chung cho mọi model). Nếu tải lỗi thì tự quay về chuyển động code.
+    this.animations = new AnimationController();
+    this._animLibrary = this.animations.loadLibrary();
 
     /** Gọi mỗi khung hình trước khi cập nhật, để bên ngoài đẩy dữ liệu (vd. âm lượng) vào. */
     this.onBeforeUpdate = null;
@@ -106,13 +121,37 @@ export class VRMAvatar {
     this.scene.add(vrm.scene);
 
     if (vrm.lookAt) vrm.lookAt.target = this.lookTarget;
-    this._applyRestPose();
+    this._boostSpringBones();
     this._fitCameraToModel();
+    this.motion = new IdleMotion(vrm, { scale: this.torsoSpan });
+    this.motion.update(0, { gazeX: 0, gazeY: 0, mouth: 0 }); // áp dáng nghỉ ngay, không nháy chữ T
+
+    if (await this._animLibrary) {
+      if (vrm.lookAt && !vrm.scene.getObjectByName('lookAtQuaternionProxy')) {
+        const proxy = new VRMLookAtQuaternionProxy(vrm.lookAt);
+        proxy.name = 'lookAtQuaternionProxy';
+        vrm.scene.add(proxy);
+      }
+      this.animations.bind(vrm);
+      const animated = new Set();
+      for (const clip of this.animations.clips.values()) {
+        for (const track of clip.tracks) animated.add(track.name.split('.')[0]);
+      }
+      this.motion.setAnimatedBones(animated);
+    }
   }
 
   /** @param {'neutral'|'happy'|'sad'|'angry'|'surprised'|'relaxed'} name */
-  setEmotion(name) {
-    this.emotionTarget = EMOTIONS.includes(name) ? name : 'neutral';
+  setEmotion(name, { gesture = true } = {}) {
+    const next = EMOTIONS.includes(name) ? name : 'neutral';
+    // cử chỉ đi kèm cảm xúc (nếu bộ animation có); gesture:false chỉ đổi nét mặt
+    if (gesture && next !== this.emotionTarget) this.animations.playEmotion(next);
+    this.emotionTarget = next;
+  }
+
+  /** Phát cử chỉ một lần theo tên nhóm trong animations.json (vd. 'nod', 'think'). */
+  playGesture(name) {
+    return this.animations.playGesture(name);
   }
 
   /** @param {number} v độ mở miệng 0..1 */
@@ -147,31 +186,45 @@ export class VRMAvatar {
     if (em?.getExpression(name)) em.setValue(name, value);
   }
 
-  _applyRestPose() {
-    const set = (bone, axis, v) => {
-      const n = this._bone(bone);
-      if (n) n.rotation[axis] = v;
-    };
-    set('leftUpperArm', 'z', -ARM_DOWN);
-    set('rightUpperArm', 'z', ARM_DOWN);
-    set('leftLowerArm', 'z', -0.08);
-    set('rightLowerArm', 'z', 0.08);
+  /** Khuếch đại vật lý xương phụ (tóc, phụ kiện) — nhiều file VRM để gravity/drag
+   *  rất thấp nên gần như đứng yên; tăng lên một chút cho thấy rõ độ đung đưa. */
+  _boostSpringBones() {
+    const joints = this.vrm?.springBoneManager?.joints;
+    if (!joints) return;
+    for (const joint of joints) {
+      joint.settings.gravityPower =
+        joint.settings.gravityPower * SPRING_BONE_BOOST.gravityScale + SPRING_BONE_BOOST.gravityBase;
+      joint.settings.dragForce *= SPRING_BONE_BOOST.dragScale;
+    }
   }
 
   _update(dt) {
     const vrm = this.vrm;
     if (!vrm) return;
     const t = this.clock.elapsedTime;
-    const k = (speed) => Math.min(1, dt * speed);
+    const k = (speed) => 1 - Math.exp(-dt * speed); // làm mượt độc lập với fps
+    const S = this.torsoSpan;
 
-    // Con trỏ (làm mượt) -> mắt và đầu
-    this.pointerSmooth.x += (this.pointer.x - this.pointerSmooth.x) * k(4);
-    this.pointerSmooth.y += (this.pointer.y - this.pointerSmooth.y) * k(4);
-    this.lookTarget.position.set(
-      this.pointerSmooth.x * 0.6,
-      1.35 + this.pointerSmooth.y * 0.3,
-      this.camera.position.z
-    );
+    // Điểm chú ý: bám con trỏ khi vừa di chuột; nếu chuột đứng yên lâu thì thỉnh thoảng
+    // liếc quanh nhẹ nhàng thay vì dán mắt vào một điểm chết.
+    let tx = this.pointer.x;
+    let ty = this.pointer.y;
+    if (t - this.lastPointerAt > 6) {
+      if (t > this.glance.until) {
+        const away = Math.random() < 0.35;
+        this.glance.x = away ? (Math.random() - 0.5) * 0.9 : (Math.random() - 0.5) * 0.15;
+        this.glance.y = away ? (Math.random() - 0.5) * 0.5 : (Math.random() - 0.5) * 0.1;
+        this.glance.until = t + 1.5 + Math.random() * 3.5;
+      }
+      tx = this.glance.x;
+      ty = this.glance.y;
+    }
+    // Mắt phản ứng nhanh (giống saccade), đầu sẽ theo chậm hơn trong IdleMotion
+    this.pointerSmooth.x += (tx - this.pointerSmooth.x) * k(9);
+    this.pointerSmooth.y += (ty - this.pointerSmooth.y) * k(9);
+    const head = this._bone('head');
+    const headY = head ? head.getWorldPosition(new THREE.Vector3()).y : 1.3;
+    this.lookTarget.position.set(this.pointerSmooth.x * S * 1.4, headY + this.pointerSmooth.y * S * 0.7, this.camera.position.z);
 
     // Biểu cảm: chuyển mượt giữa các trạng thái
     for (const e of EMOTIONS) {
@@ -180,39 +233,45 @@ export class VRMAvatar {
       this._expr(e, this.emotionWeights[e]);
     }
 
-    // Chớp mắt ngẫu nhiên
+    // Chớp mắt: đường cong mượt (khép nhanh, mở chậm hơn), thỉnh thoảng chớp đúp
     this.blinkTimer -= dt;
     if (this.blinkTimer <= 0 && this.blinkT < 0) this.blinkT = 0;
     if (this.blinkT >= 0) {
       this.blinkT += dt;
-      const p = this.blinkT / 0.18;
+      const p = this.blinkT / 0.2;
       if (p >= 1) {
         this.blinkT = -1;
-        this.blinkTimer = 2 + Math.random() * 4;
         this._expr('blink', 0);
+        if (!this.blinkDouble && Math.random() < 0.2) {
+          this.blinkDouble = true;
+          this.blinkTimer = 0.08;
+        } else {
+          this.blinkDouble = false;
+          this.blinkTimer = 2 + Math.random() * 4;
+        }
       } else {
-        this._expr('blink', 1 - Math.abs(2 * p - 1));
+        const ease = (x) => x * x * (3 - 2 * x);
+        this._expr('blink', p < 0.4 ? ease(p / 0.4) : ease(1 - (p - 0.4) / 0.6));
       }
     }
 
-    // Khẩu hình: miệng mở theo biên độ âm thanh, thêm chút biến thiên cho tự nhiên
-    this.mouth += (this.mouthTarget - this.mouth) * k(22);
+    // Khẩu hình: mở nhanh, khép chậm hơn một chút; các nguyên âm trôi mượt theo thời gian
+    this.mouth += (this.mouthTarget - this.mouth) * k(this.mouthTarget > this.mouth ? 30 : 15);
     const m = this.mouth;
-    this._expr('aa', m * 0.9);
-    this._expr('oh', m * 0.25 * (0.5 + 0.5 * Math.sin(t * 11)));
-    this._expr('ih', m * 0.15 * (0.5 + 0.5 * Math.cos(t * 7)));
+    const vow = (speed, seed) => Math.max(0, Math.min(1, 0.5 + 0.6 * noise(t * speed, seed)));
+    this._expr('aa', m * (0.55 + 0.4 * vow(6, 30)));
+    this._expr('oh', m * 0.35 * vow(4.5, 31));
+    this._expr('ih', m * 0.25 * vow(5.5, 32));
+    this._expr('ou', m * 0.2 * vow(3.5, 33));
 
-    // Thở, lắc nhẹ và nhìn theo con trỏ
-    const spine = this._bone('spine');
-    if (spine) spine.rotation.x = Math.sin(t * 1.6) * 0.012;
-    const chest = this._bone('chest');
-    if (chest) chest.rotation.x = Math.sin(t * 1.6 + 0.4) * 0.01;
-
-    const head = this._bone('head');
-    if (head) {
-      head.rotation.y = this.pointerSmooth.x * 0.25 + Math.sin(t * 0.5) * 0.03;
-      head.rotation.x = -this.pointerSmooth.y * 0.15 + m * 0.05 * Math.sin(t * 6);
-      head.rotation.z = Math.sin(t * 0.7) * 0.015;
+    // Thân: ưu tiên clip VRMA (idle/nói/cử chỉ) + cộng thêm hướng nhìn; nếu chưa có clip
+    // thì dùng chuyển động tính bằng code như trước.
+    if (this.mouthTarget > 0.05) this.speakingUntil = t + 0.6;
+    if (this.animations.ready) {
+      this.animations.update(dt, t < this.speakingUntil);
+      this.motion?.updateOverlay(dt, { gazeX: this.pointerSmooth.x, gazeY: this.pointerSmooth.y });
+    } else {
+      this.motion?.update(dt, { gazeX: this.pointerSmooth.x, gazeY: this.pointerSmooth.y, mouth: m });
     }
 
     vrm.update(dt);
@@ -234,6 +293,7 @@ export class VRMAvatar {
     head.getWorldPosition(headPos);
     hips.getWorldPosition(hipsPos);
     const torsoSpan = Math.max(0.01, headPos.y - hipsPos.y);
+    this.torsoSpan = torsoSpan;
 
     // Bounding box thật của toàn bộ mesh (kể cả tóc/phụ kiện) để biết chính xác
     // chân chạm đất ở đâu và đỉnh đầu cao tới đâu, thay vì suy đoán từ xương.

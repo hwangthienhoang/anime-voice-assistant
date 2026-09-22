@@ -7,5 +7,9 @@ node_modules/
 dist/
 .DS_Store
 
+# Scratch scripts/output tạo trong lúc làm việc, không commit
+.tmp/*
+!.tmp/.gitkeep
+
 # Model VRM thường có bản quyền riêng, không đưa lên git
 frontend/public/models/*.vrm

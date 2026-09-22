@@ -3,6 +3,7 @@ import { VRMAvatar } from './avatar/VRMAvatar.js';
 import { AudioPlayer } from './audio/AudioPlayer.js';
 import { SpeechInput } from './audio/SpeechInput.js';
 import { chat, speak } from './api.js';
+import { DemoSequence } from './avatar/DemoSequence.js';
 
 const DEFAULT_MODEL_URL = '/models/avatar.vrm';
 const SPEECH_LANG = 'vi-VN';
@@ -21,6 +22,7 @@ const notice = $('model-notice');
 
 // ---------- Khởi tạo các khối ----------
 const avatar = new VRMAvatar(canvas);
+if (import.meta.env.DEV) window.__avatar = avatar; // chỉ để debug khi dev
 const player = new AudioPlayer();
 const history = []; // [{role, content}]
 let busy = false;
@@ -80,6 +82,7 @@ async function handleUserText(rawText) {
 
   try {
     setStatus('Đang suy nghĩ…');
+    avatar.playGesture('think');
     const { reply, emotion } = await chat(history);
     history.push({ role: 'assistant', content: reply });
     addMessage('assistant', reply);
@@ -128,8 +131,94 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ---------- Avatar ----------
+// Menu demo chuyển động (không cần backend): nút "Xem demo" mở/ẩn bảng bên dưới, gồm
+// một nút "Auto" chạy trọn chuỗi DEMO_STEPS (~21s) và các nút hành động riêng lẻ (cảm
+// xúc/cử chỉ/giả lập nói) để bấm thử từng cái một, thêm ?demo vào URL để tự chạy Auto.
+const demoToggle = $('demo-toggle');
+const demoPanel = $('demo-panel');
+const demoAutoBtn = $('demo-auto');
+const demoTalkBtn = $('demo-talk');
+const demoIdleBtn = $('demo-idle');
+
+let fakeTalking = false;
+let fakeTalkT0 = 0;
+
+const demo = new DemoSequence(avatar, {
+  onStep: (label) => {
+    setStatus(`Demo: ${label}`);
+    addMessage('assistant', label);
+  },
+  onEnd: () => {
+    demoAutoBtn.textContent = '▶ Auto (chuỗi ~21s)';
+    setStatus('Sẵn sàng');
+  },
+});
+
+function setFakeTalking(on) {
+  fakeTalking = on;
+  fakeTalkT0 = performance.now() / 1000;
+  demoTalkBtn.textContent = on ? '■ Dừng giả lập nói' : 'Giả lập đang nói';
+  demoTalkBtn.setAttribute('aria-pressed', String(on));
+}
+
+/** Mô phỏng biên độ "ba-ba" giống lúc nói thật, dùng khi bấm "Giả lập đang nói". */
+function fakeTalkLevel() {
+  const local = performance.now() / 1000 - fakeTalkT0;
+  const syllable = Math.abs(Math.sin(local * Math.PI * 3.4));
+  const phrase = 0.65 + 0.35 * Math.sin(local * 1.9);
+  const pause = Math.sin(local * 0.9 + 1) > -0.85 ? 1 : 0.15;
+  return Math.min(1, 0.12 + 0.75 * syllable * phrase) * pause;
+}
+
+/** Dừng auto-demo/giả lập nói trước khi chạy một hành động riêng lẻ, để nút vừa bấm có hiệu lực ngay. */
+function resetDemoState() {
+  if (demo.running) demo.stop();
+  if (fakeTalking) setFakeTalking(false);
+}
+
+demoToggle.addEventListener('click', () => {
+  const show = demoPanel.hidden;
+  demoPanel.hidden = !show;
+  demoToggle.setAttribute('aria-expanded', String(show));
+  demoToggle.textContent = show ? 'Ẩn demo ▴' : 'Xem demo ▾';
+});
+
+demoAutoBtn.addEventListener('click', () => {
+  if (demo.running) return demo.stop();
+  if (fakeTalking) setFakeTalking(false);
+  demo.start();
+  demoAutoBtn.textContent = '■ Dừng demo';
+});
+
+demoTalkBtn.addEventListener('click', () => {
+  if (demo.running) demo.stop();
+  setFakeTalking(!fakeTalking);
+});
+
+demoIdleBtn.addEventListener('click', () => {
+  resetDemoState();
+  avatar.setEmotion('neutral', { gesture: false });
+  avatar.animations.stopGesture();
+});
+
+demoPanel.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-emotion], button[data-gesture]');
+  if (!btn) return;
+  resetDemoState();
+  if (btn.dataset.emotion) avatar.setEmotion(btn.dataset.emotion);
+  if (btn.dataset.gesture) avatar.playGesture(btn.dataset.gesture);
+});
+
+if (new URLSearchParams(location.search).has('demo')) {
+  demoPanel.hidden = false;
+  demoToggle.setAttribute('aria-expanded', 'true');
+  demoToggle.textContent = 'Ẩn demo ▴';
+  setTimeout(() => demoAutoBtn.click(), 1500);
+}
+
 avatar.onBeforeUpdate = () => {
-  const level = player.level;
+  const demoMouth = demo.tick();
+  const level = demoMouth ?? (fakeTalking ? fakeTalkLevel() : player.level);
   avatar.setMouth(level * 1.1);
   document.documentElement.style.setProperty('--level', level.toFixed(3));
 };

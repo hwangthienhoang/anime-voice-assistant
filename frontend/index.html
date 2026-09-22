@@ -49,11 +49,57 @@
       <aside class="panel" aria-label="Hội thoại">
         <header class="panel-head">
           <h1>Hana</h1>
+          <button
+            id="demo-toggle"
+            class="btn btn-quiet"
+            type="button"
+            aria-expanded="false"
+            aria-controls="demo-panel"
+          >
+            Xem demo ▾
+          </button>
           <label class="btn btn-quiet" title="Đổi nhân vật">
             Đổi nhân vật
             <input id="vrm-file-2" type="file" accept=".vrm" hidden />
           </label>
         </header>
+
+        <div id="demo-panel" class="demo-panel" hidden>
+          <div class="demo-row">
+            <button id="demo-auto" class="btn btn-solid demo-auto" type="button">▶ Auto (chuỗi ~21s)</button>
+          </div>
+
+          <div class="demo-group">
+            <p class="demo-label">Cảm xúc</p>
+            <div class="demo-grid">
+              <button class="btn btn-quiet" type="button" data-emotion="neutral">Trung tính</button>
+              <button class="btn btn-quiet" type="button" data-emotion="happy">Vui</button>
+              <button class="btn btn-quiet" type="button" data-emotion="sad">Buồn</button>
+              <button class="btn btn-quiet" type="button" data-emotion="angry">Giận</button>
+              <button class="btn btn-quiet" type="button" data-emotion="surprised">Ngạc nhiên</button>
+              <button class="btn btn-quiet" type="button" data-emotion="relaxed">Thư giãn</button>
+            </div>
+          </div>
+
+          <div class="demo-group">
+            <p class="demo-label">Cử chỉ</p>
+            <div class="demo-grid">
+              <button class="btn btn-quiet" type="button" data-gesture="nod">Gật đầu</button>
+              <button class="btn btn-quiet" type="button" data-gesture="shake">Lắc đầu</button>
+              <button class="btn btn-quiet" type="button" data-gesture="think">Suy nghĩ</button>
+            </div>
+          </div>
+
+          <div class="demo-group">
+            <p class="demo-label">Khác</p>
+            <div class="demo-grid">
+              <button id="demo-talk" class="btn btn-quiet" type="button" aria-pressed="false">
+                Giả lập đang nói
+              </button>
+              <button id="demo-idle" class="btn btn-quiet" type="button">Đứng nghỉ</button>
+            </div>
+          </div>
+        </div>
 
         <ol id="log" class="log" aria-live="polite"></ol>
 

@@ -1,0 +1,49 @@
+{
+  "_doc": "Cấu hình bộ animation. Thêm clip: thả file .vrma vào thư mục này rồi khai báo trong 'clips' và một 'set'. Đổi bộ khi chạy: avatar.animations.useSet('tên-bộ').",
+  "defaultSet": "default",
+  "fadeSeconds": 0.5,
+  "gestureMaxSeconds": 3,
+  "clips": {
+    "idle": "idle.vrma",
+    "idle-2": "idle-2.vrma",
+    "idle-3": "idle-3.vrma",
+    "idle-talking": "idle-talking.vrma",
+    "idle-talking-4": "idle-talking-4.vrma",
+    "idle-talking-5": "idle-talking-5.vrma",
+    "happy": "happy.vrma",
+    "sad": "sad.vrma",
+    "angry": "angry.vrma",
+    "relaxed": "relaxed.vrma",
+    "neutral": "neutral.vrma",
+    "nod": "nod.vrma",
+    "shake": "shake.vrma",
+    "think": "think.vrma",
+    "raise-hand": "raise-hand.vrma"
+  },
+  "sets": {
+    "default": {
+      "idle": ["idle", "idle-2", "idle-3"],
+      "idleSwitchSeconds": [20, 45],
+      "talking": ["idle-talking", "idle-talking-4", "idle-talking-5"],
+      "gestures": {
+        "nod": ["nod"],
+        "shake": ["shake"],
+        "think": ["think"]
+      },
+      "emotions": {
+        "happy": ["happy"],
+        "sad": ["sad"],
+        "angry": ["angry"],
+        "surprised": ["raise-hand"],
+        "relaxed": ["relaxed"]
+      }
+    },
+    "calm": {
+      "idle": ["idle-3"],
+      "idleSwitchSeconds": [30, 60],
+      "talking": ["idle-talking"],
+      "gestures": { "nod": ["nod"], "think": ["think"] },
+      "emotions": { "happy": ["relaxed"], "sad": ["sad"], "angry": ["shake"] }
+    }
+  }
+}
