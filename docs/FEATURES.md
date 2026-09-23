@@ -1,86 +1,95 @@
-# Danh sách tính năng
+# Backlog tính năng
 
-Backlog tính năng của anime-voice-assistant, chốt trong buổi brainstorm thiết kế (09/2026). Dùng cùng:
+Dùng cùng [roadmap](ROADMAP.md), [architecture](ARCHITECTURE.md) và [migration guide](FRONTEND_MIGRATION.md). **Trạng thái ở bảng này là của frontend Vue mới**. Prototype được ghi riêng trong cột MVP 0, không kế thừa dấu hoàn tất từ source cũ.
 
-- `docs/ROADMAP.md`: lộ trình kỹ thuật theo giai đoạn (cột **Giai đoạn** bên dưới trỏ về đó).
-- `design/wishlight/`: design system Wishlight. Cột **UI** là tên component trong đó; bắt đầu từ `design/wishlight/IMPLEMENTATION.md`.
-
-**Cách dùng:** mỗi lần làm, chọn một dòng `[ ]`, implement, rồi đổi thành `[x]` và ghi chú ngắn nếu cần. Trạng thái: `[x]` xong, `[~]` đang làm / làm một phần, `[ ]` chưa làm.
-Ưu tiên: **P0** bản MVP có giao diện Wishlight · **P1** bản tiếp theo · **P2** để sau.
+- `[x]`: đã hoạt động và kiểm tra trong frontend mới; `[~]`: một phần; `[ ]`: chưa implement.
+- `Draft`: chỉ có file/folder/TODO; chưa được tính là hoàn tất.
+- **P0**: cần cho MVP frontend; **P1**: tiếp theo; **P2**: để sau. Mốc F1A/B/C/D được định nghĩa trong roadmap; **Sau MVP** chưa có lịch.
+- Backend/provider/persona là reference hiện có, ngoài đợt tái cấu trúc frontend. Không đánh dấu backend đã sẵn sàng chỉ vì prototype có source.
 
 ## Quyết định đã chốt
 
-- Phong cách UI: Wishlight, kiểu phiêu lưu kỳ ảo (giấy da kem, xanh navy đêm, viền vàng, ngôi sao 4 cánh). Lấy cảm hứng thể loại game, không dùng logo, font, icon hay giao diện gốc của game thương mại nào.
-- Có **khung thoại** kiểu visual novel trên sân khấu cho câu đang nói, VÀ một **trang chat chi tiết** riêng cho toàn bộ lịch sử (mở bằng nút LOG).
-- Bộ cảm xúc thống nhất: `neutral`, `happy`, `relaxed`, `sad`, `surprised`, `angry`, dùng chung cho thẻ LLM, preset VRM và EmotionTag.
-- Trạng thái giọng nói luôn hiển thị: `idle → listening → thinking → speaking`.
-- Frontend giữ Vite + JS thuần; component Wishlight được port thành DOM helper, không thêm React.
+- Vue 3 + Vue Router 4 + Vite + JavaScript ESM; giữ Three.js và thư viện VRM.
+- Wishlight là design source: giấy da kem, xanh navy, viền vàng, ngôi sao bốn cánh; không dùng tài sản của game thương mại.
+- Sân khấu có DialogueBox cho câu hiện tại; `/chat` dành cho lịch sử chi tiết; `/settings` có navigation chia nhóm và theme hoạt động. Sân khấu/Chat còn placeholder; dev gallery có bộ components tương tác bằng fixture.
+- Emotions: `neutral`, `happy`, `relaxed`, `sad`, `surprised`, `angry`.
+- Voice states: `idle`, `listening`, `thinking`, `speaking`. UI state không được giả lập là mic/LLM đang chạy thật.
 
-## 1. Nhân vật (VRM)
+## Foundation
 
-| | Tính năng | Ưu tiên | Giai đoạn | UI | Ghi chú |
-|---|---|---|---|---|---|
-| [x] | Biểu cảm theo thẻ cảm xúc | P0 | 1 | EmotionTag | `avatar.setEmotion()` |
-| [x] | Chớp mắt, thở, idle | P0 | 1 | | `IdleMotion.js` |
-| [x] | Nhìn theo chuột | P0 | 1 | | |
-| [~] | Lip-sync | P0 | 1 → 4 | | Đang theo biên độ âm lượng; nâng lên viseme ở giai đoạn 4 |
-| [~] | Cử chỉ theo ngữ cảnh (gật, lắc, suy nghĩ, vẫy tay) | P1 | 4 | | Có nod/shake/think qua VRMA; thiếu vẫy tay chào, nghiêng đầu |
-| [x] | Nạp / đổi file VRM | P0 | 1 | Button | Cần restyle theo Wishlight |
-| [ ] | Tương tác chạm: click đầu/tay thì nhân vật phản ứng | P1 | 4 | | Raycast lên xương đầu/tay |
-| [ ] | Ánh mắt: saccade, nhìn camera khi nói | P1 | 4 | | |
-| [ ] | Wardrobe: đổi trang phục, background | P2 | 4 | cần design | |
-| [ ] | Desktop mascot: cửa sổ trong suốt | P2 | 6 | cần design | Tauri/Electron |
+| Trạng thái | Hạng mục | Mốc | Ghi chú |
+| --- | --- | --- | --- |
+| [x] | Tài liệu và hướng dẫn AI thống nhất | F1A | AGENTS, architecture, migration |
+| [x] | Vue app shell, routes và 404 | F1A | Placeholder, chưa có nghiệp vụ |
+| [x] | Folder theo feature, snapshot legacy | F1A | Runtime có draft; components đã implement ở F1B |
+| [x] | Wishlight CSS/JSON đồng bộ, production build | F1A/F1B | Không đồng nghĩa UI sản phẩm hoàn chỉnh |
+| [x] | Component library và dev gallery | F1B | Tokens, components, states, light/dark; xem `DESIGN_SYSTEM.md` |
 
-## 2. Hội thoại (text + voice)
+## Nhân vật
 
-| | Tính năng | Ưu tiên | Giai đoạn | UI | Ghi chú |
-|---|---|---|---|---|---|
-| [x] | Chat text | P0 | 1 | ChatBubble, ChatComposer | Cần chuyển sang giao diện Wishlight |
-| [x] | Voice qua Web Speech API | P0 | 1 | MicButton | |
-| [ ] | MicButton 4 trạng thái | P0 | 1 | MicButton | Map trạng thái trong `IMPLEMENTATION.md` bước 2 |
-| [ ] | Khung thoại trên sân khấu (AUTO / LOG / SKIP) | P0 | 1 | DialogueBox | Chữ chạy theo thời lượng TTS |
-| [ ] | Trang chat chi tiết | P0 | 1 | ChatPage | Panel hiện tại chuyển thành view riêng |
-| [~] | Dừng nhân vật đang nói | P0 | 1 → 3 | MicButton, DialogueBox | Đang có phím Esc; thêm SKIP và nhấn mic khi đang nói |
-| [ ] | Phát lại giọng từng tin nhắn | P1 | 1 | ChatBubble (`voice`) | Lưu blob audio TTS |
-| [ ] | Streaming câu trả lời + TTS theo câu | P1 | 2 | DialogueBox | Mục tiêu độ trễ dưới 1,5 giây |
-| [ ] | Chế độ rảnh tay (VAD) + ngắt lời bằng giọng | P1 | 3 | Toggle, MicButton | `@ricky0123/vad-web` |
-| [ ] | Phụ đề song ngữ | P1 | 2 | DialogueBox (`subtitle`), Toggle | |
-| [ ] | Chọn giọng TTS, tốc độ, cao độ | P1 | 2 | Toggle, cần design Slider/Select | |
-| [ ] | Call mode toàn màn hình | P2 | 3 | cần design | |
+| Trạng thái | Tính năng | Ưu tiên | Mốc | MVP 0 / đích mới |
+| --- | --- | --- | --- | --- |
+| [ ] | Nạp/đổi VRM, camera và zoom | P0 | F1C | Có source cũ; AvatarStage hiện placeholder |
+| [ ] | Biểu cảm theo emotion | P0 | F1C | Có `setEmotion`; runtime mới draft |
+| [ ] | Blink, thở, idle | P0 | F1C | Tham khảo IdleMotion và VRMAvatar |
+| [ ] | Nhìn theo chuột | P0 | F1C | Có source cũ; cần cleanup listener |
+| [ ] | Lip-sync theo biên độ | P0 | F1C | Có source cũ; viseme để sau MVP |
+| [ ] | Gesture theo ngữ cảnh | P1 | F1C / Sau MVP | Có VRMA nod/shake/think/raise-hand; cần đánh giá trước khi port |
+| [ ] | Phản ứng khi chạm đầu/tay | P1 | Sau MVP | Chưa có; cần design tương tác |
+| [ ] | Saccade, nhìn camera khi nói | P1 | Sau MVP | Có thử nghiệm gaze trong source cũ, chưa nghiệm thu |
+| [ ] | Wardrobe, background | P2 | Sau MVP | Cần design |
+| [ ] | Desktop mascot | P2 | Sau MVP | Phụ thuộc plan đóng gói |
 
-## 3. Tính cách & trí nhớ
+## Hội thoại và voice
 
-| | Tính năng | Ưu tiên | Giai đoạn | UI | Ghi chú |
-|---|---|---|---|---|---|
-| [~] | Persona (tính cách, xưng hô, câu cửa miệng) | P0 | 1 | | Đang ở `backend/prompts/persona.md` |
-| [ ] | Persona editor trên giao diện | P1 | 5 | cần design | Tên, xưng hô, tính cách, giọng |
-| [ ] | Lưu lịch sử nhiều cuộc trò chuyện | P1 | 5 | ConversationItem | localStorage trước, backend sau |
-| [ ] | Trí nhớ dài hạn (tên, sở thích, chuyện đã kể) | P1 | 5 | cần design | Trang "Điều mình nhớ về bạn", cho xem/xóa |
-| [ ] | Chỉ số thân thiết, mở khóa lời thoại | P2 | 5 | cần design | |
-| [ ] | Mood của nhân vật trong ngày | P2 | 5 | EmotionTag | |
-| [ ] | Nhiều nhân vật | P2 | 5 | cần design | Mỗi nhân vật: persona + VRM + giọng |
+| Trạng thái | Tính năng | Ưu tiên | Mốc | MVP 0 / UI |
+| --- | --- | --- | --- | --- |
+| [ ] | Text chat | P0 | F1B → F1D | Có prototype; ChatBubble/Composer đã có UI; chưa nối API |
+| [ ] | STT bằng Web Speech API | P0 | F1C | SpeechInput mới draft |
+| [~] | MicButton bốn trạng thái | P0 | F1B → F1C | Có UI thử nghiệm cũ; component Vue có đủ states; chưa có mic runtime |
+| [~] | DialogueBox, AUTO / LOG / SKIP | P0 | F1B → F1D | UI/events đã có, gallery có typewriter fixture; app integration để sau |
+| [~] | Chat chi tiết và sidebar | P0 | F1B | ChatPanel chạy trong gallery; `/chat` vẫn placeholder |
+| [ ] | Dừng playback bằng control/phím tắt | P0 | F1C | Có stop/Escape cũ; cần cancel đúng lifecycle |
+| [ ] | Phát lại giọng từng tin nhắn | P1 | F1C → F1D | Có source replay cũ; chưa port |
+| [ ] | Streaming reply và TTS theo câu | P1 | Sau MVP | Chờ plan backend và đo latency |
+| [ ] | Rảnh tay/VAD, ngắt lời bằng giọng | P1 | Sau MVP | Chưa có VAD; AUTO cũ chỉ bật/tắt SpeechInput |
+| [ ] | Phụ đề song ngữ | P1 | Sau MVP | DialogueBox subtitle; chờ contract |
+| [ ] | Chọn giọng, tốc độ, cao độ | P1 | Sau MVP | Cần design và khả năng TTS đã chốt |
+| [ ] | Call mode toàn màn hình | P2 | Sau MVP | Cần design |
 
-## 4. Chủ động & tiện ích
+## Tính cách và trí nhớ
 
-| | Tính năng | Ưu tiên | Giai đoạn | UI | Ghi chú |
-|---|---|---|---|---|---|
-| [ ] | Chào theo thời gian (sáng, tối, lâu không gặp) | P1 | 5 | DialogueBox | |
-| [ ] | Nhắc việc, hẹn giờ, Pomodoro | P1 | 5 | cần design | Tool use |
-| [ ] | Thời tiết, tra cứu, tóm tắt | P2 | 5 | cần design (card kết quả) | Tool use |
-| [ ] | Nhật ký / tóm tắt cuộc trò chuyện mỗi ngày | P2 | 5 | ChatPage | |
+| Trạng thái | Tính năng | Ưu tiên | Mốc | Ghi chú |
+| --- | --- | --- | --- | --- |
+| [ ] | Hiển thị persona trong frontend | P0 | F1D | `backend/prompts/persona.md` tồn tại; chưa nối Vue |
+| [ ] | Persona editor | P1 | Sau MVP | Cần design và plan lưu trữ |
+| [ ] | Lưu nhiều cuộc trò chuyện | P1 | Sau MVP | ConversationItem đã có UI; chưa chốt persistence |
+| [ ] | Memory có xem/xóa | P1 | Sau MVP | Chờ plan backend |
+| [ ] | Chỉ số thân thiết/mở khóa lời thoại | P2 | Sau MVP | Chưa có |
+| [ ] | Mood theo ngày | P2 | Sau MVP | Chưa có |
+| [ ] | Nhiều nhân vật | P2 | Sau MVP | Persona + VRM + giọng; chưa có |
 
-## 5. Hệ thống & cài đặt
+## Chủ động và tiện ích
 
-| | Tính năng | Ưu tiên | Giai đoạn | UI | Ghi chú |
-|---|---|---|---|---|---|
-| [x] | Nhiều nhà cung cấp LLM | P0 | 1 | | `backend/providers/` (claude, openai) |
-| [ ] | Giao diện Wishlight + theme sáng/tối | P0 | 1 | tất cả | `IMPLEMENTATION.md` bước 1 |
-| [ ] | Onboarding (chọn VRM, đặt tên, cấp quyền mic) | P1 | 1 | cần design | |
-| [ ] | Màn hình cài đặt (giọng, model, phụ đề, rảnh tay, trí nhớ) | P1 | 2 | Toggle, Button | |
-| [ ] | Quyền riêng tư: xóa dữ liệu, tắt trí nhớ | P1 | 5 | Button `danger` | |
-| [ ] | Phím tắt | P2 | 1 | | |
-| [ ] | Đóng gói desktop / PWA | P2 | 6 | | |
+| Trạng thái | Tính năng | Ưu tiên | Mốc | Ghi chú |
+| --- | --- | --- | --- | --- |
+| [ ] | Chào theo thời gian/lần quay lại | P1 | Sau MVP | DialogueBox |
+| [ ] | Nhắc việc, hẹn giờ, Pomodoro | P1 | Sau MVP | Chờ plan tool use |
+| [ ] | Thời tiết, tra cứu, tóm tắt | P2 | Sau MVP | Cần design result card |
+| [ ] | Nhật ký/tóm tắt hội thoại | P2 | Sau MVP | ChatView |
 
-## Màn hình còn cần design trong Wishlight
+## Hệ thống và cài đặt
 
-Sân khấu chính (bố cục đầy đủ), Persona editor, Cài đặt, Onboarding, Trí nhớ, Call mode, Wardrobe. Khi design xong, cập nhật `design/wishlight/` và cột UI ở trên.
+| Trạng thái | Tính năng | Ưu tiên | Mốc | Ghi chú |
+| --- | --- | --- | --- | --- |
+| [~] | UI Wishlight hoàn chỉnh, theme light/dark | P0 | F1B | Workspace có theme switch và lưu lựa chọn; nội dung các màn sản phẩm chưa hoàn tất |
+| [ ] | Tích hợp LLM provider | P0 | F1D | Backend cũ có Claude/OpenAI; chờ plan riêng |
+| [ ] | Onboarding: VRM, tên, quyền mic | P1 | Sau MVP | Cần design |
+| [ ] | Cài đặt giọng/model/phụ đề/rảnh tay/memory | P1 | F1B / Sau MVP | `/settings` đã có navigation nhóm và theme; các mục runtime vẫn placeholder, chưa có persistence nghiệp vụ |
+| [ ] | Xóa dữ liệu/tắt memory | P1 | Sau MVP | Cần storage contract |
+| [ ] | Bộ phím tắt | P2 | Sau MVP | Escape/L có trong prototype |
+| [ ] | Desktop / PWA | P2 | Sau MVP | Chưa chốt cách đóng gói |
+
+## Design còn thiếu
+
+Bố cục sân khấu hoàn chỉnh, Settings, Persona editor, Onboarding, Memory, Call mode và Wardrobe. Không suy ra design hoàn chỉnh từ placeholder. Khi triển khai, cập nhật `design/wishlight/` và component spec tương ứng.

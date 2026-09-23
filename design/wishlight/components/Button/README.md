@@ -1,6 +1,8 @@
+# Button
+
 Nút bấm dạng viên thuốc (pill) với ô icon tròn ở đầu, lấy cảm hứng từ menu game phiêu lưu.
 
-**Consumer cung cấp:** `children` (chữ), `variant` (`primary` | `secondary` | `ghost` | `danger`), `icon` (`star` mặc định, `check`, `trash`, `play`, `send`, `mic`, hoặc `null` để bỏ ô icon), và mọi prop của `<button>`.
+**Vue contract (F1B, đã implement):** `BaseButton.vue` tại `src/shared/ui/`. Props: `variant` (`primary` | `secondary` | `ghost` | `danger`), `icon`, `loading`, `disabled`; chuyển tiếp native button attributes và event `click`. Default slot chứa nhãn, slot `icon` chứa WishlightIcon (bỏ slot khi không có icon). Mặc định `type="button"`.
 
 - `primary`: một hành động chính mỗi màn hình (Bắt đầu, Lưu, Gửi). Nền `action`, chữ `on-action`, ô icon `gold`.
 - `secondary`: hành động phụ đi cạnh primary. Viền `line-strong`.

@@ -1,53 +1,70 @@
 # Lộ trình phát triển
 
-Bộ khung hiện tại là **giai đoạn 1 (MVP)**. Mỗi giai đoạn dưới đây thay hoặc nâng cấp một khối, giao diện giữa các khối được giữ nguyên nên không cần viết lại toàn bộ.
+## Đánh giá lại baseline
 
-## Giai đoạn 1: MVP (đã có trong project này)
+Giai đoạn từng được gọi là “MVP đã có” được xác định lại thành **MVP 0**: prototype để test model, chuyển động nhân vật, luồng text/voice thử nghiệm và một phần CSS theo Wishlight. Chưa có cấu trúc frontend và mức hoàn thiện đủ để coi là MVP sản phẩm.
 
-- Nhập chữ hoặc nói, Claude trả lời, avatar đọc lên và mấp máy miệng.
-- Biểu cảm theo thẻ cảm xúc, chớp mắt, thở, nhìn theo chuột.
-- Nhược điểm đã biết: chờ trọn câu trả lời rồi mới đọc (độ trễ khoảng 2 đến 4 giây), chưa ngắt lời bằng giọng nói được.
+Trạng thái hiện tại: **F1B — bộ components và dev gallery**; F1A đã hoàn tất. Các views sản phẩm vẫn là skeleton; backend chờ plan riêng. `[x]` = hoàn tất trong phạm vi mô tả, `[~]` = một phần, `[ ]` = chưa thực hiện. File draft không được tính là feature đã xong.
 
-## Giai đoạn 2: Giảm độ trễ
+## M0 — MVP 0 / prototype tham khảo
 
-Mục tiêu: dưới khoảng 1,5 giây từ lúc bạn ngừng nói đến lúc nhân vật cất tiếng.
+- [x] Có source thử nghiệm load/đổi VRM, biểu cảm, blink, idle, gaze, gesture VRMA và lip-sync theo biên độ.
+- [x] Có source thử nghiệm chat, Web Speech API, TTS và một phần Wishlight UI.
+- [x] Lưu source cũ tại `frontend/legacy/mvp-0/`; giữ model/animation assets ở `frontend/public/`.
 
-- **Streaming câu trả lời:** dùng `client.messages.stream(...)` ở backend, gửi về frontend qua SSE hoặc WebSocket.
-- **TTS theo câu:** cắt luồng chữ theo dấu câu, đọc câu đầu tiên ngay khi có, xếp hàng các câu sau trong `AudioPlayer`.
-- **Thẻ cảm xúc giữa câu:** cho phép thẻ xuất hiện nhiều lần, mỗi thẻ áp dụng từ câu đó trở đi.
+Các dấu hoàn tất ở M0 mô tả **sự tồn tại của prototype**, không xác nhận tính năng đã migrate, ổn định hoặc được nghiệm thu. Prototype chưa có cleanup phù hợp cho route lifecycle; các tích hợp bên ngoài chưa được kiểm chứng lại trong đợt này.
 
-## Giai đoạn 3: Đối thoại tự nhiên
+## F1A — Tái cấu trúc frontend (đã hoàn tất)
 
-- **Ngắt lời (barge-in):** thay Web Speech API bằng VAD chạy trên trình duyệt (`@ricky0123/vad-web`, dựa trên Silero VAD). Khi VAD phát hiện bạn bắt đầu nói thì gọi `player.stop()`.
-- **Chống vọng:** bật `echoCancellation` khi gọi `getUserMedia` để micro không nghe lại giọng avatar, từ đó bỏ được việc tạm dừng micro.
-- **STT chất lượng cao hơn:** gửi audio lên Whisper (`faster-whisper` chạy local) hoặc dịch vụ như Deepgram, Google STT, FPT.AI. Thay nội dung `SpeechInput.js`, giữ nguyên `onFinal`, `onInterim`.
-- **Điều phối realtime:** cân nhắc Pipecat hoặc LiveKit Agents nếu muốn WebRTC và quản lý lượt nói chuyên nghiệp.
+- [x] Viết lại README, roadmap, backlog; bổ sung AGENTS, architecture, migration guide.
+- [x] Chốt Vue 3 + Vue Router 4 + Vite + JavaScript; giữ Three.js và thư viện VRM.
+- [x] Chia `app`, `views`, `features`, `shared`, `assets`; có file draft cho các trách nhiệm chính.
+- [x] App shell và routes `/`, `/chat`, `/settings`, 404 chạy không cần backend.
+- [x] Có một nguồn Wishlight CSS chuẩn và script đồng bộ sang frontend.
+- [x] Có dependency lockfile và production build cho skeleton.
 
-## Giai đoạn 4: Nhân vật sống động hơn
+**Tiêu chí hoàn tất:** tài liệu và folder thực tế khớp nhau; `npm ci`, `check:design`, `build` chạy được; navigation/deep links hoạt động; app mới không import legacy, khởi tạo avatar/audio hoặc gửi request backend. Hoàn tất F1A chỉ xác nhận foundation.
 
-- **Cử chỉ:** nạp animation `.vrma` bằng `@pixiv/three-vrm-animation` (idle, vẫy tay, gật đầu, nghiêng đầu). Có thể lấy từ Mixamo rồi retarget sang VRM.
-- **Ánh mắt:** thêm dao động mắt nhỏ (saccade) và nhìn vào camera khi đang nói.
-- **Khẩu hình chính xác:** dùng viseme thay cho biên độ. Azure TTS trả viseme kèm theo; hoặc phân tích âm thanh bằng thuật toán kiểu `uLipSync`.
-- **Bối cảnh:** thay nền phẳng bằng phòng 3D, ánh sáng theo giờ trong ngày.
+## F1B — Vue UI theo Wishlight
 
-## Giai đoạn 5: Trí nhớ và khả năng làm việc
+- [x] Workspace shell tối giản: top bar một dòng, navigation theo feature hoặc nhóm cài đặt, avatar menu inline, utility icon rail, status bar và nút đóng/mở sidebar theo trạng thái. Xem `WORKSPACE_LAYOUT.md`.
+- [x] Theme switch Sáng/Tối ở top bar và mục Giao diện, lưu trên thiết bị.
+- [x] Implement shared UI: BaseButton, BaseToggle, WishlightIcon, EmotionTag; bổ sung Input/Select/Range/Notice.
+- [x] Implement DialogueBox, MicButton, ChatBubble, ChatComposer, ConversationItem và presentational ChatPanel/SettingsPanel/AvatarStage.
+- [x] Dev gallery `/dev/design-system`: toàn bộ tokens, light/dark, component states và tương tác fixture. Xem `DESIGN_SYSTEM.md`.
+- [ ] Hoàn thiện nội dung Sân khấu, ChatView và các mục Settings chưa có runtime bên trong workspace shell; responsive và theme của từng màn.
+- [x] Dùng fixture rõ ràng trong gallery để kiểm tra empty/loading/error states trước khi nối API.
+- [~] Component tests và browser smoke-check keyboard/theme/tiếng Việt/reduced motion; chưa nghiệm thu full app accessibility/contrast.
 
-- **Bộ nhớ dài hạn:** lưu tóm tắt hội thoại và sở thích người dùng vào SQLite hoặc vector DB, đưa vào system prompt khi cần.
-- **Tool use:** cho Claude gọi công cụ (thời tiết, lịch, tìm kiếm, điều khiển thiết bị). Tool calling của API Claude hoạt động tốt với mô hình trả lời ngắn.
-- **Nhiều nhân vật:** mỗi nhân vật một `persona.md`, một model VRM và một giọng đọc.
+**Tiêu chí hoàn tất:** UI components có props/emits/slots rõ ràng, đúng design và hoạt động với fixture; không cần backend để kiểm tra UI. Presentational components đã có; các luồng nghiệp vụ vẫn chưa tích hợp.
 
-## Giai đoạn 6: Đóng gói
+## F1C — Port avatar và browser audio
 
-- **Desktop:** Tauri hoặc Electron, có thể làm cửa sổ nền trong suốt để nhân vật đứng trên màn hình nền.
-- **Mobile:** PWA trước, sau đó cân nhắc Capacitor hoặc Unity + UniVRM nếu cần hiệu năng cao.
+- [ ] Port VRM runtime và animation từng phần từ snapshot; mount/unmount có cleanup.
+- [ ] Nạp/đổi model, camera/zoom, biểu cảm, idle/gaze/gesture và demo cô lập.
+- [ ] Port AudioPlayer, SpeechInput qua composables, có hủy tác vụ và xử lý browser không hỗ trợ.
+- [ ] Kết nối state `idle → listening → thinking → speaking` ở app coordinator; UI chỉ hiển thị/phát event.
+- [ ] Kiểm tra đổi route không nhân đôi RAF, listeners, mic session hoặc playback.
 
-## Nếu muốn giọng khác
+**Tiêu chí hoàn tất:** kiểm tra được avatar và audio với local fixtures/demo; cleanup đúng khi rời màn hình. Chưa yêu cầu gọi LLM/TTS thật.
 
-| Nhu cầu | Gợi ý |
+## F1D — MVP frontend tích hợp (chờ plan backend)
+
+- [ ] Chủ project xác định plan backend và contract tích hợp.
+- [ ] Kết nối text/voice → reply/emotion → playback/lip-sync qua API adapters.
+- [ ] Hoàn thiện retry/cancel/error states và đồng bộ sân khấu với lịch sử chat.
+- [ ] Nghiệm thu luồng hoàn chỉnh trước khi gọi là MVP sản phẩm.
+
+Không tự triển khai hoặc thay đổi backend để hoàn thành các mốc F1A–F1C. Contract prototype chỉ là reference; mọi mục dưới đây là hướng nghiên cứu, không phải cam kết kiến trúc.
+
+## Hướng phát triển sau MVP — chưa lên lịch
+
+| Chủ đề | Backlog / câu hỏi cần chốt |
 | --- | --- |
-| Ổn định, có SLA, viseme kèm theo | Azure Speech (`vi-VN-HoaiMyNeural`) |
-| Giọng tự nhiên, đa ngôn ngữ | ElevenLabs |
-| Chạy hoàn toàn offline | Piper hoặc model F5-TTS tinh chỉnh cho tiếng Việt (cần thử nghiệm chất lượng) |
-| Giọng kiểu anime tiếng Nhật/Anh | GPT-SoVITS, Style-Bert-VITS2 (không phù hợp tiếng Việt) |
+| Độ trễ | Streaming reply, TTS theo câu, cảm xúc giữa câu; đo baseline trước khi đặt mục tiêu latency |
+| Hội thoại tự nhiên | VAD, barge-in bằng giọng nói, echo cancellation, STT thay thế; đánh giá sau plan backend |
+| Nhân vật | Viseme, saccade, phản ứng khi chạm, bối cảnh, wardrobe |
+| Trí nhớ và tiện ích | Nhiều cuộc trò chuyện, persona editor, memory có xem/xóa, tool use, nhắc việc |
+| Đóng gói | PWA, desktop bằng Tauri/Electron, mobile nếu có nhu cầu |
 
-Chỉ cần đổi hàm `tts()` trong `backend/main.py`, frontend không phải sửa.
+Chi tiết tính năng và bằng chứng từ MVP 0 nằm tại [`FEATURES.md`](FEATURES.md). Thứ tự port nằm tại [`FRONTEND_MIGRATION.md`](FRONTEND_MIGRATION.md).
