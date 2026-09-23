@@ -1,8 +1,12 @@
+# Wishlight — design system
+
 Giao diện kiểu phiêu lưu kỳ ảo cho một trợ lý anime 3D (VRM) trò chuyện bằng chữ và giọng nói. Có hai không gian: **sân khấu** (cảnh 3D tối, khung thoại kiểu visual novel) và **trang giấy da** (chat chi tiết, cài đặt, persona). Phong cách lấy cảm hứng từ thể loại game nhập vai phiêu lưu nhưng là bộ nhận diện riêng: không dùng logo, icon, font hay tài sản của bất kỳ game thương mại nào.
+
+Bộ presentational components đã có trong [dev gallery](../../docs/DESIGN_SYSTEM.md). Đây vẫn là **design target** cho ứng dụng hoàn chỉnh, chưa bao gồm runtime/API. Frontend đang chuyển từ MVP 0 sang Vue 3; xem [implementation guide](IMPLEMENTATION.md) để biết mapping component, props/emits/slots và [roadmap](../../docs/ROADMAP.md) để biết tiến độ. `reference/` giữ React prototype chỉ để tham khảo.
 
 ## Nguyên tắc
 
-- **Nhân vật là trung tâm.** Trên sân khấu, UI chỉ chiếm cạnh dưới (DialogueBox) và một cụm điều khiển nhỏ; không panel nào che mặt nhân vật.
+- **Nhân vật là trung tâm.** Sân khấu nằm trong workspace content của [workspace layout](../../docs/WORKSPACE_LAYOUT.md). DialogueBox ở cạnh dưới của cảnh; sidebar và inspector nằm ngoài cảnh và có thể ẩn để mở rộng không gian, không phủ lên mặt nhân vật ở desktop.
 - **Khung thoại cho khoảnh khắc, trang chat cho toàn bộ.** DialogueBox chỉ hiện câu đang nói. Mọi lịch sử, tìm kiếm, phát lại giọng nằm ở ChatPage, mở bằng nút LOG.
 - **Trạng thái giọng nói luôn nhìn thấy được.** Mỗi lượt voice đi qua `idle → listening → thinking → speaking`; MicButton hiện cả màu lẫn chữ.
 - **Ấm, mềm, có trang trí vừa phải.** Viên thuốc và góc bo lớn, viền vàng mảnh, ngôi sao bốn cánh làm dấu hiệu. Không dùng gradient tím-xanh, không dùng emoji làm trang trí.
@@ -36,7 +40,7 @@ Giao diện kiểu phiêu lưu kỳ ảo cho một trợ lý anime 3D (VRM) trò
 
 ## Icon
 
-- Nét tròn 2px, khung 24px, `currentColor`, vẽ inline qua `Wishlight.Icon` (star, mic, send, play, check, trash, chevron, wave).
+- Nét tròn 2px, khung 24px, `currentColor`, vẽ inline qua `WishlightIcon.vue` (star, mic, send, play, check, trash, chevron, wave); prototype cũ gọi là `Wishlight.Icon`.
 - Ngôi sao bốn cánh (`star`) là dấu hiệu riêng: ô icon của Button, dấu "tiếp" cuối lời thoại, dấu mục lịch sử, vạch phân cách ngày.
 
 ## Chuyển động
@@ -47,7 +51,7 @@ Giao diện kiểu phiêu lưu kỳ ảo cho một trợ lý anime 3D (VRM) trò
 
 ## Màn hình
 
-1. **Sân khấu**: nhân vật 3D ở giữa, DialogueBox ở đáy, MicButton ở góc phải dưới, nút cài đặt góc phải trên.
+1. **Sân khấu**: nhân vật 3D ở giữa workspace content, DialogueBox ở đáy cảnh, MicButton ở góc phải dưới cảnh; Cài đặt mở từ menu avatar trong sidebar.
 2. **Trang chat chi tiết** (ChatPage): sidebar lịch sử, luồng tin, ô soạn tin có mic.
 3. **Persona editor**: tên, cách xưng hô, tính cách, giọng TTS.
 4. **Cài đặt**: giọng nói, model, phụ đề, rảnh tay, trí nhớ (Toggle, Button danger).

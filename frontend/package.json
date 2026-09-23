@@ -6,14 +6,24 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:design": "node scripts/sync-design.mjs",
+    "check:design": "node scripts/sync-design.mjs --check",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@pixiv/three-vrm": "^3.3.0",
     "@pixiv/three-vrm-animation": "^3.5.5",
-    "three": "^0.169.0"
+    "three": "^0.169.0",
+    "vue": "^3.5.0",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "vite": "^5.4.0"
+    "@vitejs/plugin-vue": "^5.2.0",
+    "@vue/test-utils": "~2.4.6",
+    "jsdom": "^25.0.1",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.9"
   }
 }

@@ -1,6 +1,8 @@
+# DialogueBox
+
 Khung thoại kiểu visual novel đặt ở cạnh dưới sân khấu 3D, hiện lời nhân vật đang nói.
 
-**Consumer cung cấp:** `speaker`, `text` (chữ đang chạy theo TTS), `done` (false khi chữ còn đang chạy, ẩn ngôi sao "tiếp"), `emotion`, `subtitle` (dòng dịch), `auto`, `onToggleAuto`, `onLog` (mở trang chat chi tiết), `onSkip`, `onNext` (click khung để tiếp).
+**Vue contract (F1B, đã implement):** `DialogueBox.vue` tại `src/features/conversation/components/`. Props: `speaker`, `text` (phần chữ đang hiện), `done`, `emotion`, `subtitle`, `auto`. Emits: `toggle-auto`, `log`, `skip`, `reveal`. Typewriter và playback thuộc owner/composable; component không tự điều khiển audio hoặc router.
 
 - Nền `night-glass` trên cảnh 3D, tên người nói kiểu `speaker` màu `gold`, lời thoại kiểu `dialogue` màu `on-night`.
 - Chiều rộng tối đa 880px, căn giữa, cách đáy màn hình `space-6`.

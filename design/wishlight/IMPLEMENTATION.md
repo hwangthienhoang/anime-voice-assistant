@@ -1,79 +1,73 @@
-# Wishlight — hướng dẫn implement cho anime-voice-assistant
+# Wishlight — hướng dẫn implement bằng Vue
 
-File này dành cho AI (hoặc người) code frontend. Đọc hết file này, rồi `README.md` (quy tắc thiết kế) và `components/<Tên>/README.md` trước khi sửa UI.
+Dành cho AI và người phát triển frontend. Đọc [AGENTS](../../AGENTS.md), [architecture](../../docs/ARCHITECTURE.md), [migration](../../docs/FRONTEND_MIGRATION.md), [design README](README.md) và component spec liên quan trước khi sửa UI.
 
-## Có gì trong thư mục này
+## Trạng thái và nguồn chuẩn
+
+App có **Wishlight components và dev gallery F1B**; views sản phẩm vẫn skeleton. Xem [catalogue](../../docs/DESIGN_SYSTEM.md) và mở `/dev/design-system` khi chạy dev. Source JavaScript thuần thuộc **MVP 0**, giữ trong `frontend/legacy/mvp-0/`. Hướng dẫn này thay thế yêu cầu cũ dùng DOM helpers; không port cả `main.js` cũ vào một Vue component.
 
 | File | Vai trò |
-|---|---|
-| `README.md` | Quy tắc thiết kế: màu dùng ở đâu, chữ, giọng văn, bố cục màn hình |
-| `tokens.json` | Nguồn gốc của mọi giá trị (màu 2 theme, font, spacing, radius, shadow) |
-| `tokens.css` | CSS variables sinh từ `tokens.json`, dùng thẳng được |
-| `components.css` | CSS thuần cho mọi component (class `wl-*`), không phụ thuộc framework |
-| `components/<Tên>/README.md` | Props/dữ liệu cần truyền, khi nào dùng, nên và không nên |
-| `reference/*.preview.html`, `reference/react-prototype.bundle.js`, `reference/props.d.ts` | Bản prototype React dùng để xem mẫu trong design system. **Chỉ để tham khảo, không import vào app.** |
+| --- | --- |
+| `README.md` | Quy tắc visual, copy, bố cục và accessibility |
+| `tokens.json` | Định nghĩa tokens; khi sửa phải cập nhật CSS tương ứng |
+| `tokens.css`, `components.css` | CSS chuẩn, framework-independent; class `wl-*` |
+| `components/<Tên>/README.md` | Contract mục tiêu cho Vue props/emits/slots |
+| `reference/*.preview.html`, `react-prototype.bundle.js`, `props.d.ts` | Prototype cũ để xem mẫu; không import vào runtime, không phải Vue API |
 
-Bản xem trực quan (live preview) nằm ở artifact Design System "Wishlight" trên claude.ai của chủ project.
+## Stack và CSS
 
-## Nguyên tắc khi implement
+1. Vue 3 SFC với `<script setup>`, JavaScript ESM; navigation dùng Vue Router 4.
+2. Chỉnh design source rồi chạy `cd frontend && npm run sync:design`; kiểm tra bằng `npm run check:design`. Script copy tokens.css, components.css và tokens.json, **không** generate CSS từ `tokens.json`.
+3. `src/assets/styles/index.css` import tokens → components → base. Layout riêng dùng scoped style; không đưa CSS toàn app vào một component.
+4. Màu, font, spacing, radius dùng tokens. `index.html` load Nunito và Philosopher; `data-theme="light" | "dark"` trên `<html>`. Stage/DialogueBox luôn tối.
+5. Render text bằng interpolation/slot, không dùng `v-html` cho nội dung người dùng hoặc LLM.
+6. Pure UI chỉ nhận props/phát events; không gọi API, khởi tạo renderer, mic hoặc audio. Owner của effects là composable/runtime theo architecture.
 
-1. **Giữ stack hiện tại: Vite + JavaScript thuần.** Không thêm React/Vue chỉ để làm UI. Mỗi component là một hàm nhỏ tạo DOM (hoặc template HTML) trả ra đúng markup ở mục "Markup chuẩn" bên dưới, để `components.css` áp dụng được luôn.
-2. **Không hard-code màu, font, khoảng cách.** Luôn dùng `var(--token)`. Nếu cần giá trị mới, thêm vào `tokens.json` rồi sinh lại `tokens.css`.
-3. **Thẻ cảm xúc dùng chung một bộ tên:** `neutral`, `happy`, `relaxed`, `sad`, `surprised`, `angry`, trùng với `backend/prompts/persona.md` và preset VRM. Giá trị `emotion` từ `/api/chat` truyền thẳng vào `avatar.setEmotion()` và vào EmotionTag.
-4. Theme đặt bằng `data-theme="light" | "dark"` trên `<html>`. Sân khấu và khung thoại luôn tối ở cả hai theme.
-5. Không đổi logic audio/avatar/API nếu không cần; phần này chủ yếu là lớp giao diện.
+## Mapping component
 
-## Bước 1 — Nền tảng
+Các path sau tương đối với `frontend/src/`. Các component UI đã implement; contract chi tiết và các control bổ sung có tại [DESIGN_SYSTEM.md](../../docs/DESIGN_SYSTEM.md). Runtime và API chưa tích hợp.
 
-- Copy `tokens.css` và `components.css` vào `frontend/src/styles/`, import trong `main.js` **trước** `style.css`.
-- `index.html`: thay font Be Vietnam Pro bằng
-  `https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Philosopher:wght@400;700&display=swap`
-- `style.css`: bỏ các biến cũ (`--night`, `--dusk`, `--mist`, `--sakura`, `--paper`, `--ink`, `--ink-soft`, `--line`, `--font`) và thay mọi chỗ dùng bằng token Wishlight. Gợi ý: nền sân khấu → `--night`; chữ → `--ink`/`--on-night`; viền → `--line`; font → `--font-sans` / `--font-display`. Giữ biến `--level` (âm lượng) vì MicButton dùng lại.
-- Thêm `data-theme="light"` cho `<html>`.
+| Design component | Vue destination | Contract chính |
+| --- | --- | --- |
+| Button | `shared/ui/BaseButton.vue` | `variant`, `icon`, `loading`, `disabled`, native attrs; default/icon slots; native click |
+| Toggle | `shared/ui/BaseToggle.vue` | `modelValue`, `label`; `update:modelValue` |
+| Icon | `shared/ui/WishlightIcon.vue` | `name`; SVG inline, không phụ thuộc React |
+| EmotionTag | `shared/ui/EmotionTag.vue` | `emotion`, `onNight`; optional default slot |
+| MicButton | `features/voice/components/MicButton.vue` | `state`, `label`, `showLabel`, `disabled`; `toggle` |
+| DialogueBox | `features/conversation/components/DialogueBox.vue` | `speaker`, `text`, `done`, `emotion`, `subtitle`, `auto`; `toggle-auto`, `log`, `skip`, `reveal` |
+| ChatBubble | `features/conversation/components/ChatBubble.vue` | `from`, `text`, `name`, `time`, `emotion`, `voice`, `typing`; `play` |
+| ChatComposer | `features/conversation/components/ChatComposer.vue` | `modelValue`, `placeholder`, `disabled`; `update:modelValue`, `send`, `mic`; slot `mic` |
+| ConversationItem | `features/conversation/components/ConversationItem.vue` | `title`, `snippet`, `time`, `current`; `select` |
+| ChatPage / ChatPanel | `features/conversation/components/ChatPanel.vue` | Ghép sidebar/thread/composer trong gallery; `/chat` vẫn placeholder |
 
-## Bước 2 — Sân khấu (`.stage`)
+`children` của prototype React chuyển thành default slot hoặc prop text rõ nghĩa; `onX` chuyển thành `@event`, `value/onChange` chuyển thành `v-model`. Component specs đã dùng Vue contract; `reference/props.d.ts` được giữ nguyên như tài liệu lịch sử.
 
-- Thay `#status` + `#mic` bằng **MicButton** (có nhãn). Map trạng thái:
+## Thứ tự port
 
-| Chỗ trong `main.js` | Trạng thái MicButton |
-|---|---|
-| Mặc định / `speech.onStateChange(false)` | `idle` |
-| `speech.onStateChange(true)` | `listening` |
-| Trước `await chat(history)` | `thinking` |
-| Trước `await player.play(audio)` | `speaking` |
-| `finally` | `listening` nếu `speech.enabled`, ngược lại `idle` |
+### F1B — UI
 
-  Nhấn mic khi `speaking` = `player.stop()` rồi bắt đầu nghe (ngắt lời).
-- Thêm **DialogueBox** ở đáy sân khấu (tối đa 880px, căn giữa, cách đáy `--space-6`), thay cho việc chỉ hiện câu trả lời ở panel:
-  - `speaker` = tên nhân vật (hiện là "Hana" trong `index.html`; nên lấy từ một hằng số/persona).
-  - `emotion` = giá trị từ `/api/chat` (ẩn tag khi `neutral`).
-  - Chữ chạy từng ký tự trong khoảng thời lượng audio TTS; click vào khung → hiện hết câu ngay.
-  - **SKIP** = `player.stop()`. **LOG** = mở trang chat (Bước 3). **AUTO** = chế độ rảnh tay (mic tự nghe lại sau khi nhân vật nói xong).
-  - Ẩn khung khi chưa có câu nào hoặc sau khoảng 6 giây im lặng.
-- Nút zoom giữ nguyên chức năng, restyle thành nút tròn `--parchment-raised` + icon.
-- Thông báo lỗi và "Chưa có nhân vật" (`#model-notice`): card `--parchment-raised`, `--radius-lg`, nút "Chọn file .vrm" dùng Button `primary`.
+- Implement shared UI trước, sau đó feature components và views với fixture.
+- Dùng `shared/constants/emotions.js` và `voiceStates.js`; giá trị lạ fallback về `neutral`/`idle`.
+- MicButton luôn có nhãn/aria-label; màu không phải dấu hiệu trạng thái duy nhất. Component phát `toggle`, owner quyết định bắt đầu/dừng/ngắt lời.
+- DialogueBox: LOG phát `log`, view điều hướng tới named route `chat`; SKIP/AUTO/reveal phát event, không gọi audio service. Typewriter thuộc composable, không phát `aria-live` lại từng ký tự. Component thực tế dùng button reveal riêng khi `done=false`, có keyboard access; markup bên dưới là reference tĩnh từ prototype.
+- ChatComposer: Enter gửi, Shift+Enter xuống dòng; không gửi khi IME đang composition. Ghép MicButton qua slot ở view để tránh feature import lẫn nhau.
+- Workspace shell có navigation sidebar và utility icon rail độc lập; dưới 900px chúng là drawer. Cài đặt có navigation chia nhóm trong sidebar trái. ChatPanel vẫn có sidebar lịch sử riêng trong nội dung ChatView khi được tích hợp. Không dùng DOM class toggle thay thế route.
+- Chưa hiện control hoạt động giả nếu chưa có handler. Fixture phải được ghi rõ trong môi trường phát triển.
 
-## Bước 3 — Trang chat chi tiết (ChatPage)
+### F1C / F1D — runtime và tích hợp
 
-- Panel `.panel` hiện tại trở thành **ChatPage**: một view riêng mở bằng LOG hoặc phím tắt, trượt ngang 200ms, có nút "Về sân khấu" (Button `secondary`, icon `play`). Trên màn rộng ≥1200px có thể giữ dạng panel bên phải; dưới 720px thì sidebar thu thành ngăn kéo.
-- `addMessage(kind, text)` → sinh **ChatBubble**:
-  - `user` → `wl-msg-user`; `assistant` → `wl-msg-ai` kèm tên, EmotionTag, giờ.
-  - `user interim` (chữ đang nhận dạng) → bong bóng user với `opacity: .6`.
-  - `error` → dòng chữ `--danger` căn giữa, có chữ "Lỗi:" ở đầu (không chỉ dựa vào màu).
-  - Khi đang chờ `/api/chat` → bong bóng `typing`.
-  - Lưu blob audio TTS của mỗi câu để nút "Phát lại" phát lại được.
-- Form `.composer` → **ChatComposer** (textarea, MicButton nhỏ, nút gửi). Enter gửi, Shift+Enter xuống dòng.
-- Sidebar **ConversationItem**: giai đoạn đầu chỉ có một cuộc trò chuyện; khi có lưu lịch sử (localStorage hoặc backend) thì mỗi cuộc là một item.
-- Bảng demo (`#demo-panel`): các nút dùng Button `secondary`/`ghost`, nhóm cảm xúc hiện EmotionTag.
+- Port avatar/audio theo migration guide, thêm cleanup đầy đủ trước khi ghép vào UI.
+- Voice state và playback/duration đi từ app coordinator xuống component. Chỉ bắt đầu mic sau thao tác người dùng.
+- Khi backend plan được chốt mới nối chat/TTS adapters. Giữ draft service cho tới lúc đó.
 
-## Bước 4 — Kiểm tra trước khi xong
+## Kiểm tra trước khi hoàn tất UI
 
-- [ ] Không còn màu/font hard-code ngoài `tokens.css` (grep `#[0-9a-f]{3,6}` trong `style.css`).
-- [ ] Đổi `data-theme` sang `dark`: mọi chữ vẫn đọc rõ.
-- [ ] Tab qua mọi control: có vòng focus `--focus`.
-- [ ] Bật "Reduce motion" của hệ điều hành: vòng mic hết chuyển động.
-- [ ] Chữ tiếng Việt hiện đủ dấu ở cả Philosopher và Nunito.
-- [ ] Luồng voice đầy đủ: nghe → nghĩ → nói → nghe lại, MicButton và DialogueBox đổi đúng trạng thái.
+- [x] Props/emits/slots có contract rõ, component không chứa side effects ngoài trách nhiệm.
+- [x] Màu/font/spacing dùng tokens; `check:design` và `build` chạy được.
+- [ ] Theme dark/light, viewport hẹp, tiếng Việt và focus đều đọc được.
+- [ ] Keyboard hoạt động; labels đầy đủ; reduced motion tắt chuyển động không cần thiết.
+- [ ] Navigation qua router; back/forward/refresh đúng; loading/empty/error có trạng thái riêng.
+- [ ] Chỉ đánh dấu feature hoàn tất khi behavior đã chạy; fixture và draft không tính integration.
 
 ## Markup chuẩn
 

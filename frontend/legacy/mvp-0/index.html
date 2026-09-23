@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="vi" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Hana, trợ lý giọng nói</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Philosopher:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="app">
+      <section class="stage" aria-label="Nhân vật">
+        <canvas id="avatar"></canvas>
+
+        <div class="zoom-controls" role="group" aria-label="Thu phóng nhân vật">
+          <button id="zoom-in" class="zoom-btn" type="button" aria-label="Phóng to">+</button>
+          <button id="zoom-out" class="zoom-btn" type="button" aria-label="Thu nhỏ">−</button>
+        </div>
+
+        <div id="model-notice" class="notice" hidden>
+          <p class="notice-title">Chưa có nhân vật</p>
+          <p class="notice-body">
+            Chọn một file <code>.vrm</code> (tạo bằng VRoid Studio hoặc tải từ VRoid Hub), hoặc đặt file
+            vào <code>frontend/public/models/avatar.vrm</code>.
+          </p>
+          <label class="wl-btn wl-btn-primary wl-btn-noicon">
+            Chọn file .vrm
+            <input id="vrm-file" type="file" accept=".vrm" hidden />
+          </label>
+        </div>
+
+        <div class="stage-bottom">
+          <section id="dialogue-box" class="wl-dlg" aria-label="Lời thoại" hidden>
+            <div class="wl-dlg-ctrls">
+              <button id="dlg-auto" type="button" class="wl-dlg-ctrl" aria-pressed="false">AUTO</button>
+              <button id="dlg-log" type="button" class="wl-dlg-ctrl">LOG</button>
+              <button id="dlg-skip" type="button" class="wl-dlg-ctrl">SKIP</button>
+            </div>
+            <div class="wl-dlg-head">
+              <span id="dlg-name" class="wl-dlg-name">Hana</span>
+              <span id="dlg-emotion" class="wl-emo wl-emo-onnight" hidden>
+                <span class="wl-emo-dot"></span><span id="dlg-emotion-label"></span>
+              </span>
+              <span class="wl-dlg-rule" aria-hidden="true"></span>
+            </div>
+            <p id="dlg-text" class="wl-dlg-text" aria-live="polite"></p>
+          </section>
+
+          <span class="wl-mic-wrap">
+            <button id="mic" type="button" class="wl-mic wl-mic-idle" aria-pressed="false" aria-label="Nhấn để nói">
+              <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Zm-6 9a6 6 0 0 0 12 0M12 18v3"></path>
+              </svg>
+            </button>
+            <span id="mic-label" aria-live="polite">Nhấn để nói</span>
+          </span>
+        </div>
+      </section>
+
+      <aside id="chatpage" class="chatpage" aria-label="Trang chat chi tiết">
+        <div class="wl-page">
+          <aside class="wl-side">
+            <h2>Nhật ký</h2>
+            <div id="conversation-list"></div>
+          </aside>
+
+          <div class="wl-main">
+            <header class="wl-main-head">
+              <button
+                id="sidebar-toggle"
+                type="button"
+                class="wl-btn wl-btn-ghost wl-btn-noicon sidebar-toggle"
+                aria-expanded="false"
+                aria-controls="chatpage"
+              >
+                Lịch sử
+              </button>
+              <h1>Hana</h1>
+              <button
+                id="demo-toggle"
+                type="button"
+                class="wl-btn wl-btn-ghost wl-btn-noicon"
+                aria-expanded="false"
+                aria-controls="demo-panel"
+              >
+                Xem demo
+              </button>
+              <label class="wl-btn wl-btn-ghost wl-btn-noicon" title="Đổi nhân vật">
+                Đổi nhân vật
+                <input id="vrm-file-2" type="file" accept=".vrm" hidden />
+              </label>
+              <button id="chatpage-close" type="button" class="wl-btn wl-btn-secondary">
+                <span class="wl-btn-ico"
+                  ><svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="currentColor"
+                    stroke="none"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M8 5v14l11-7L8 5Z"></path></svg
+                ></span>Về sân khấu
+              </button>
+            </header>
+
+            <div id="demo-panel" class="demo-panel" hidden>
+              <div class="demo-row">
+                <button id="demo-auto" type="button" class="wl-btn wl-btn-secondary demo-auto">
+                  ▶ Auto (chuỗi ~21s)
+                </button>
+              </div>
+
+              <div class="demo-group">
+                <p class="demo-label">Cảm xúc</p>
+                <div class="demo-grid">
+                  <button type="button" class="demo-emo" data-emotion="neutral">
+                    <span class="wl-emo"><span class="wl-emo-dot" style="background: var(--emo-neutral)"></span>Bình thường</span>
+                  </button>
+                  <button type="button" class="demo-emo" data-emotion="happy">
+                    <span class="wl-emo"><span class="wl-emo-dot" style="background: var(--emo-happy)"></span>Vui</span>
+                  </button>
+                  <button type="button" class="demo-emo" data-emotion="sad">
+                    <span class="wl-emo"><span class="wl-emo-dot" style="background: var(--emo-sad)"></span>Buồn</span>
+                  </button>
+                  <button type="button" class="demo-emo" data-emotion="angry">
+                    <span class="wl-emo"><span class="wl-emo-dot" style="background: var(--emo-angry)"></span>Dỗi</span>
+                  </button>
+                  <button type="button" class="demo-emo" data-emotion="surprised">
+                    <span class="wl-emo"><span class="wl-emo-dot" style="background: var(--emo-surprised)"></span>Ngạc nhiên</span>
+                  </button>
+                  <button type="button" class="demo-emo" data-emotion="relaxed">
+                    <span class="wl-emo"><span class="wl-emo-dot" style="background: var(--emo-relaxed)"></span>Thư thái</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="demo-group">
+                <p class="demo-label">Cử chỉ</p>
+                <div class="demo-grid">
+                  <button type="button" class="wl-btn wl-btn-ghost wl-btn-noicon" data-gesture="nod">Gật đầu</button>
+                  <button type="button" class="wl-btn wl-btn-ghost wl-btn-noicon" data-gesture="shake">Lắc đầu</button>
+                  <button type="button" class="wl-btn wl-btn-ghost wl-btn-noicon" data-gesture="think">Suy nghĩ</button>
+                </div>
+              </div>
+
+              <div class="demo-group">
+                <p class="demo-label">Khác</p>
+                <div class="demo-grid">
+                  <button id="demo-talk" type="button" class="wl-btn wl-btn-ghost wl-btn-noicon" aria-pressed="false">
+                    Giả lập đang nói
+                  </button>
+                  <button id="demo-idle" type="button" class="wl-btn wl-btn-ghost wl-btn-noicon">Đứng nghỉ</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="thread" class="wl-thread" aria-live="polite"></div>
+
+            <div class="wl-main-foot">
+              <div class="wl-composer">
+                <textarea
+                  id="input"
+                  rows="1"
+                  placeholder="Nhắn gì đó cho bạn đồng hành…"
+                  aria-label="Tin nhắn"
+                ></textarea>
+                <button
+                  id="composer-mic"
+                  type="button"
+                  class="wl-mic wl-mic-idle"
+                  aria-pressed="false"
+                  aria-label="Nhấn để nói"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Zm-6 9a6 6 0 0 0 12 0M12 18v3"></path>
+                  </svg>
+                </button>
+                <button id="send-btn" type="button" aria-label="Gửi" class="wl-btn wl-btn-primary wl-btn-noicon wl-send">
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    class="wl-send-ico"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M4 12 20 4l-5 16-3.5-6.5L4 12Zm7.5 1.5L20 4"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

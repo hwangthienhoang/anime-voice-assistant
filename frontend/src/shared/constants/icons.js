@@ -1,0 +1,30 @@
+// Các path gốc được port từ Wishlight reference; phần mở rộng cùng nét 2px/24px.
+export const ICON_PATHS = Object.freeze({
+  star: 'M12 2 C12.6 8 16 11.4 22 12 C16 12.6 12.6 16 12 22 C11.4 16 8 12.6 2 12 C8 11.4 11.4 8 12 2 Z',
+  mic: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Zm-6 9a6 6 0 0 0 12 0M12 18v3',
+  send: 'M4 12 20 4l-5 16-3.5-6.5L4 12Zm7.5 1.5L20 4',
+  play: 'M8 5v14l11-7L8 5Z',
+  check: 'M5 12.5 10 17l9-10',
+  trash: 'M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13',
+  chevron: 'M6 9l6 6 6-6',
+  wave: 'M4 12h1M8 8v8M12 5v14M16 8v8M20 12h0',
+  sun: 'M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5',
+  moon: 'M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10Z',
+  menu: 'M4 6h16M4 12h16M4 18h16',
+  message: 'M4 5h16v12H8l-4 3V5Zm4 4h8m-8 4h5',
+  settings: 'M4 7h16M4 17h16M8 4v6m8 4v6',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 8a8 8 0 0 1 16 0',
+  'panel-left': 'M3 4h18v16H3V4Zm6 0v16',
+  'panel-right': 'M3 4h18v16H3V4Zm12 0v16',
+  'arrow-up-right': 'M7 17 17 7M8 7h9v9',
+  close: 'm6 6 12 12M6 18 18 6',
+  back: 'm11 5-7 7 7 7M4 12h16',
+  plus: 'M12 5v14M5 12h14',
+  minus: 'M5 12h14',
+  refresh: 'M20 7v5h-5M4 17v-5h5M6 6a8 8 0 0 1 14 6M4 12a8 8 0 0 0 14 6',
+  info: 'M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM12 11v6M12 7h.01',
+  warning: 'M12 3 2 21h20L12 3ZM12 9v5M12 17h.01',
+  loader: 'M20 12a8 8 0 1 1-8-8',
+});
+
+export const FILLED_ICONS = Object.freeze(['star', 'play']);
