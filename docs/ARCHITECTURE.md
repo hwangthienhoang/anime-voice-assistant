@@ -4,8 +4,16 @@
 
 - Vue 3 SFC + Composition API (`<script setup>`), JavaScript ESM.
 - Vite giữ major 5 của prototype; thêm `@vitejs/plugin-vue` major 5 tương thích. Không gộp việc nâng major tooling vào đợt tổ chức lại source.
+<<<<<<< HEAD
 - Vue Router 4 với history routing ở local dev/build thường và hash routing cho GitHub Pages; lazy-loaded views, named routes và 404.
 - Giữ Three.js, `@pixiv/three-vrm`, `@pixiv/three-vrm-animation`; skeleton chưa import runtime 3D.
+||||||| b72ea3b
+- Vue Router 4 với history routing, lazy-loaded views, named routes và 404.
+- Giữ Three.js, `@pixiv/three-vrm`, `@pixiv/three-vrm-animation`; skeleton chưa import runtime 3D.
+=======
+- Vue Router 4 với history routing, lazy-loaded views, named routes và 404.
+- Giữ Three.js, `@pixiv/three-vrm`, `@pixiv/three-vrm-animation`; route Sân khấu lazy-load runtime 3D.
+>>>>>>> mvp-1
 - Wishlight là design source; chưa thêm UI framework, CSS framework, Pinia hoặc TypeScript. Khi có nhu cầu state dùng chung thực tế, ghi quyết định mới trước khi thêm dependency.
 - Backend giữ nguyên và không nằm trong dependency graph của skeleton.
 
@@ -40,9 +48,9 @@ frontend/
     ├── features/
     │   ├── avatar/
     │   │   ├── components/AvatarStage.vue     # presentational stage + slots
-    │   │   ├── composables/useAvatar.js       # draft lifecycle bridge
-    │   │   └── runtime/                      # draft VRMAvatar, IdleMotion,
-    │   │                                     # AnimationController, DemoSequence
+    │   │   ├── composables/                  # useAvatar lifecycle bridge, useStageTypewriter cho lời chào
+    │   │   └── runtime/                      # VRMAvatar, AnimationController, EntranceMotion, DemoSequence chạy;
+    │   │                                     # IdleMotion còn draft
     │   ├── conversation/
     │   │   ├── components/                   # DialogueBox, ChatBubble, ChatPanel,
     │   │   │                                 # ChatComposer, ConversationItem
@@ -69,7 +77,7 @@ frontend/
         └── base.css                         # reset và global foundations
 ```
 
-Đây là tree hiện tại: UI components đã implement; composables/runtime/services nghiệp vụ vẫn draft. Chi tiết contract tại `DESIGN_SYSTEM.md`. File có `TODO(F1B/F1C/F1D)` là vị trí dành cho implementation sau, không phải module đang hoạt động. Không tạo thêm một tầng folder chỉ để chứa một file nếu chưa có trách nhiệm riêng.
+Đây là tree hiện tại: UI components và runtime avatar dành riêng cho Sân khấu đã implement; conversation, voice và API services còn draft. Chi tiết contract tại `DESIGN_SYSTEM.md`. File có `TODO(F1B/F1C/F1D)` là vị trí dành cho implementation sau, không phải module đang hoạt động. Không tạo thêm một tầng folder chỉ để chứa một file nếu chưa có trách nhiệm riêng.
 
 ## Dependency boundaries
 
@@ -94,7 +102,7 @@ Các route sản phẩm chia sẻ workspace shell. Sidebar trái chọn route v�
 
 | Path | Name | View | Trạng thái |
 | --- | --- | --- | --- |
-| `/` | `stage` | StageView | Placeholder vùng avatar |
+| `/` | `stage` | StageView | Model VRM cục bộ, màn chào, demo VRMA, zoom; chưa nối hội thoại |
 | `/chat` | `chat` | ChatView | Placeholder hội thoại |
 | `/settings` (query `section`) | `settings` | SettingsView | Navigation chia nhóm; Giao diện/Thông tin chạy, mục khác ghi rõ chưa sẵn sàng |
 | `/dev/design-system` (DEV only) | `design-system` | DesignSystemView | Gallery toàn bộ tokens/components/fixtures |

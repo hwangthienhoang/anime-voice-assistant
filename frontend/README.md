@@ -1,10 +1,10 @@
 # Frontend
 
-Vue 3 + Vue Router 4 + Vite + JavaScript ESM. **Hiện có foundation + component gallery F1B**, chưa port runtime/API từ MVP 0. Đọc [architecture](../docs/ARCHITECTURE.md) và [migration](../docs/FRONTEND_MIGRATION.md) trước khi implement.
+Vue 3 + Vue Router 4 + Vite + JavaScript ESM. **Hiện có foundation, component gallery F1B và Sân khấu avatar cục bộ thuộc F1C**. Chat/voice/API chưa port. Đọc [architecture](../docs/ARCHITECTURE.md) và [migration](../docs/FRONTEND_MIGRATION.md) trước khi implement.
 
 ## Chạy và kiểm tra
 
-Node.js 22.12+ hoặc 24.x, npm; không cần backend/API key/model cho skeleton.
+Node.js 22.12+ hoặc 24.x, npm; Sân khấu cần `public/models/avatar.vrm`, không cần backend/API key.
 
 ```bash
 npm ci
@@ -13,7 +13,7 @@ npm run dev
 
 Mở [dev gallery](http://localhost:5173/dev/design-system) để xem toàn bộ design system. Catalogue/contract ở [DESIGN_SYSTEM.md](../docs/DESIGN_SYSTEM.md). Gallery không có trong production build/preview.
 
-App chính ở [localhost:5173](http://localhost:5173). `/`, `/chat`, `/settings` có placeholder; URL khác hiện 404. `npm run preview` phục vụ output sau build.
+App chính ở [localhost:5173](http://localhost:5173). `/` có model VRM; màn chào dùng `AnimationClip` tạo tại runtime để Paimon bay từ xa vào giữa sân khấu với tay/chân chuyển động, xoay một vòng, đáp đất, vẫy tay và hiện chữ typewriter. Nút “Xem lại màn chào” phát lại toàn bộ choreography; khi bật reduced motion, lời chào bắt đầu ngay và bỏ qua đoạn bay. `/chat` còn placeholder, `/settings` hoạt động một phần. URL khác hiện 404. `npm run preview` phục vụ output sau build.
 
 ```bash
 npm test
@@ -42,12 +42,12 @@ Frontend hiện vẫn là skeleton, chưa gọi backend, tải model hay chạy 
 | --- | --- |
 | `src/app` | Shell/router và coordinator draft |
 | `src/views` | Bốn route-level views chạy được |
-| `src/features` | avatar, conversation, voice, settings: UI đã có, runtime/services draft; devtools giữ fixtures/gallery |
+| `src/features` | avatar có runtime sân khấu cục bộ; conversation/voice còn draft; devtools giữ fixtures/gallery |
 | `src/shared` | UI components đã implement, constants, HTTP draft |
 | `src/assets/styles` | Wishlight CSS + global foundations |
-| `public` | Assets giữ nguyên; skeleton chưa load model/animation |
+| `public` | Model VRM cục bộ và VRMA/manifest/NOTICE dùng trên Sân khấu |
 | `legacy/mvp-0` | Snapshot tham khảo; không import vào app |
 
-UI components đã implement và xuất hiện trong gallery; `AvatarStage` là presentation layer với slots, chưa có renderer. Routes sản phẩm vẫn skeleton. Không có API requests, mic session hoặc renderer trong skeleton. Proxy `/api` vẫn trỏ port 8000 để tích hợp sau plan backend.
+UI components đã implement và xuất hiện trong gallery; `AvatarStage` là presentation layer với slots. `StageView` sở hữu composable tạo renderer, tải model/animation và dispose khi rời route. Sân khấu không gửi API request hoặc xin quyền mic. Proxy `/api` vẫn trỏ port 8000 để tích hợp sau plan backend.
 
 Khi triển khai production, host cần history fallback về `index.html` cho route UI và xử lý `/api` riêng. Chưa thêm hosting configuration trong đợt này.

@@ -18,10 +18,10 @@ Các path cũ dưới đây tương đối với `frontend/legacy/mvp-0/`; đíc
 | `src/main.js` — mic/playback/state | `src/features/voice/` và app coordinator | Draft |
 | `src/api.js` — `chat()` | `src/features/conversation/services/chatApi.js` + shared HTTP client | Draft, chờ F1D |
 | `src/api.js` — `speak()` | `src/features/voice/services/ttsApi.js` + shared HTTP client | Draft, chờ F1D |
-| `src/avatar/VRMAvatar.js` | `src/features/avatar/runtime/VRMAvatar.js` + `composables/useAvatar.js` | Draft, chưa copy runtime |
-| `src/avatar/IdleMotion.js` | `src/features/avatar/runtime/IdleMotion.js` | Draft |
-| `src/avatar/AnimationController.js` | `src/features/avatar/runtime/AnimationController.js` | Draft |
-| `src/avatar/DemoSequence.js` | `src/features/avatar/runtime/DemoSequence.js` | Draft, demo dev sau này |
+| `src/avatar/VRMAvatar.js` | `src/features/avatar/runtime/VRMAvatar.js` + `composables/useAvatar.js` | Port có chọn lọc cho Sân khấu; cleanup khi rời route |
+| `src/avatar/IdleMotion.js` | `src/features/avatar/runtime/IdleMotion.js` | Draft; stage dùng VRMA idle |
+| `src/avatar/AnimationController.js` | `src/features/avatar/runtime/AnimationController.js` | Port crossfade, retarget và clip cục bộ cho stage |
+| `src/avatar/DemoSequence.js` | `src/features/avatar/runtime/DemoSequence.js` | Màn chào và demo trên Sân khấu |
 | `src/audio/AudioPlayer.js` | `src/features/voice/runtime/AudioPlayer.js` | Draft |
 | `src/audio/SpeechInput.js` | `src/features/voice/runtime/SpeechInput.js` | Draft |
 | `src/style.css` | `src/assets/styles/base.css` + scoped styles của layout/component | Foundation và component CSS chuẩn; gallery có scoped styles |
@@ -41,7 +41,7 @@ Các path cũ dưới đây tương đối với `frontend/legacy/mvp-0/`; đíc
 
 ### F1B — UI trước, dữ liệu thử sau
 
-Đã có components, ChatPanel/SettingsPanel/AvatarStage presentational và gallery tại `/dev/design-system`. Xem [catalogue](DESIGN_SYSTEM.md). Chưa ghép các views sản phẩm hoặc nối runtime/API.
+Đã có components, ChatPanel/SettingsPanel/AvatarStage presentational và gallery tại `/dev/design-system`. Xem [catalogue](DESIGN_SYSTEM.md). StageView đã ghép runtime avatar cục bộ; ChatView/API vẫn chưa nối.
 
 1. Port shared UI và specs từ Wishlight sang Vue props/emits/slots.
 2. Port conversation components và MicButton chỉ với props/events, không gọi API.
