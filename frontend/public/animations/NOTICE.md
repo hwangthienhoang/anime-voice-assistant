@@ -23,6 +23,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
-Source mapping (Overte FBX -> file here):
-idle.fbx -> idle | idle04 -> idle-2 | idle03 -> idle-3 | talk_armsdown -> idle-talking | talk03 -> idle-talking-4 |
-(see Hanami vrma/NOTICE.md for the full table incl. idle-talking-5, happy, sad, angry, relaxed, neutral, nod, shake, think, raise-hand).
+The additional 16 files were copied from Hanami commit
+`6787685c8d40e4e79bffbb0d389b478f32ef88d6` (`vrma/`). Source mapping:
+
+| Local VRMA | Overte FBX |
+| --- | --- |
+| `idle-4` | `idle02.fbx` |
+| `idle-7` | `idleWS_all.fbx` |
+| `idle-talking-6` | `talk_lefthand.fbx` |
+| `idle-talking-7` | `talk_righthand.fbx` |
+| `think-2` | `idle_once_lookleftright.fbx` |
+| `nod-2` | `emote_agree_acknowledge.fbx` |
+| `nod-3` | `emote_agree_headnodyes.fbx` |
+| `nod-4` | `emote_agree_longheadnod.fbx` |
+| `nod-5` | `emote_agree_thoughtfulheadnod.fbx` |
+| `raise-hand-2` | `emote_raisehand04_all.fbx` |
+| `happy-2` | `emote_clap02_all.fbx` |
+| `happy-3`, `happy-6` | `emote_clap03_all.fbx` (different cuts) |
+| `angry-2` | `emote_disagree_thoughtfulheadshake.fbx` |
+| `relaxed-2` | `idle_once_shiftheelpivot.fbx` |
+| `relaxed-3` | `idle_once_fidget.fbx` |
+
+See [Hanami's full NOTICE](https://github.com/Undi95/Hanami/blob/6787685c8d40e4e79bffbb0d389b478f32ef88d6/vrma/NOTICE.md) for the original 15 files and exact frame ranges.

@@ -51,7 +51,7 @@ Các path sau tương đối với `frontend/src/`. Các component UI đã imple
 - MicButton luôn có nhãn/aria-label; màu không phải dấu hiệu trạng thái duy nhất. Component phát `toggle`, owner quyết định bắt đầu/dừng/ngắt lời.
 - DialogueBox: LOG phát `log`, view điều hướng tới named route `chat`; SKIP/AUTO/reveal phát event, không gọi audio service. Typewriter thuộc composable, không phát `aria-live` lại từng ký tự. Component thực tế dùng button reveal riêng khi `done=false`, có keyboard access; markup bên dưới là reference tĩnh từ prototype.
 - ChatComposer: Enter gửi, Shift+Enter xuống dòng; không gửi khi IME đang composition. Ghép MicButton qua slot ở view để tránh feature import lẫn nhau.
-- Workspace shell có navigation sidebar và utility icon rail độc lập; dưới 900px chúng là drawer. Cài đặt có navigation chia nhóm trong sidebar trái. ChatPanel vẫn có sidebar lịch sử riêng trong nội dung ChatView khi được tích hợp. Không dùng DOM class toggle thay thế route.
+- Workspace shell có navigation sidebar và utility icon rail độc lập; dưới 900px chúng là drawer. StageView giữ nút demo/phát lại dưới sân khấu, đưa thư viện VRMA/mix vào panel bên phải; chọn clip ở drawer sẽ trả người dùng về sân khấu. Cài đặt có navigation chia nhóm trong sidebar trái. ChatPanel vẫn có sidebar lịch sử riêng trong nội dung ChatView khi được tích hợp. Không dùng DOM class toggle thay thế route.
 - Chưa hiện control hoạt động giả nếu chưa có handler. Fixture phải được ghi rõ trong môi trường phát triển.
 
 ### F1C / F1D — runtime và tích hợp

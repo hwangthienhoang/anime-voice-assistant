@@ -36,7 +36,7 @@ npm run dev
 
 Mở [Wishlight dev gallery](http://localhost:5173/dev/design-system) để xem components/design tokens và thử light/dark, inputs, conversation states. Gallery chỉ có trong dev.
 
-App chính ở [localhost:5173](http://localhost:5173). Route `/` tải avatar, tự phát màn chào và có các nút demo animation; `/chat` vẫn là placeholder, `/settings` mới có một số mục hoạt động. URL không khớp hiện trang 404. Chưa có hội thoại thật.
+App chính ở [localhost:5173](http://localhost:5173). Route `/` tải avatar, tự phát màn chào, cho xem 31 VRMA và 4 mix hội thoại với preview khẩu hình; `/chat` vẫn là placeholder, `/settings` mới có một số mục hoạt động. Preview khẩu hình chưa đồng bộ với audio/TTS. URL không khớp hiện trang 404. Chưa có hội thoại thật.
 
 ```bash
 npm test
