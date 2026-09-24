@@ -1,5 +1,5 @@
 {
-  "_doc": "Cấu hình bộ animation. Thêm clip: thả file .vrma vào thư mục này rồi khai báo trong 'clips' và một 'set'. Đổi bộ khi chạy: avatar.animations.useSet('tên-bộ').",
+  "_doc": "Khai báo file .vrma trong clips và thêm vào catalogue để hiện ở thư viện Stage. sets là cấu hình tham khảo từ prototype.",
   "defaultSet": "default",
   "fadeSeconds": 0.5,
   "gestureMaxSeconds": 3,
@@ -7,19 +7,107 @@
     "idle": "idle.vrma",
     "idle-2": "idle-2.vrma",
     "idle-3": "idle-3.vrma",
+    "idle-4": "idle-4.vrma",
+    "idle-7": "idle-7.vrma",
     "idle-talking": "idle-talking.vrma",
     "idle-talking-4": "idle-talking-4.vrma",
     "idle-talking-5": "idle-talking-5.vrma",
+    "idle-talking-6": "idle-talking-6.vrma",
+    "idle-talking-7": "idle-talking-7.vrma",
     "happy": "happy.vrma",
+    "happy-2": "happy-2.vrma",
+    "happy-3": "happy-3.vrma",
+    "happy-6": "happy-6.vrma",
     "sad": "sad.vrma",
     "angry": "angry.vrma",
+    "angry-2": "angry-2.vrma",
     "relaxed": "relaxed.vrma",
+    "relaxed-2": "relaxed-2.vrma",
+    "relaxed-3": "relaxed-3.vrma",
     "neutral": "neutral.vrma",
     "nod": "nod.vrma",
+    "nod-2": "nod-2.vrma",
+    "nod-3": "nod-3.vrma",
+    "nod-4": "nod-4.vrma",
+    "nod-5": "nod-5.vrma",
     "shake": "shake.vrma",
     "think": "think.vrma",
-    "raise-hand": "raise-hand.vrma"
+    "think-2": "think-2.vrma",
+    "raise-hand": "raise-hand.vrma",
+    "raise-hand-2": "raise-hand-2.vrma"
   },
+  "catalogue": [
+    {
+      "id": "gestures",
+      "label": "Cử chỉ",
+      "description": "Các kiểu giơ tay, gật, lắc đầu và suy nghĩ.",
+      "loop": false,
+      "clips": [
+        { "name": "raise-hand", "label": "Vẫy chào", "emotion": "happy" },
+        { "name": "raise-hand-2", "label": "Giơ tay 02", "emotion": "happy" },
+        { "name": "nod", "label": "Gật đầu", "emotion": "relaxed" },
+        { "name": "nod-2", "label": "Gật nhẹ 02", "emotion": "relaxed" },
+        { "name": "nod-3", "label": "Gật đầu 03", "emotion": "relaxed" },
+        { "name": "nod-4", "label": "Gật dài 04", "emotion": "relaxed" },
+        { "name": "nod-5", "label": "Gật trầm ngâm 05", "emotion": "relaxed" },
+        { "name": "shake", "label": "Lắc đầu" },
+        { "name": "think", "label": "Suy nghĩ" },
+        { "name": "think-2", "label": "Nhìn quanh 02" }
+      ]
+    },
+    {
+      "id": "emotions",
+      "label": "Biểu cảm",
+      "description": "Các sắc thái cảm xúc của nhân vật.",
+      "loop": false,
+      "clips": [
+        { "name": "neutral", "label": "Bình thường" },
+        { "name": "happy", "label": "Vui vẻ", "emotion": "happy" },
+        { "name": "happy-2", "label": "Vui vẻ 02", "emotion": "happy" },
+        { "name": "happy-3", "label": "Vui vẻ 03", "emotion": "happy" },
+        { "name": "happy-6", "label": "Vỗ tay", "emotion": "happy" },
+        { "name": "sad", "label": "Buồn", "emotion": "sad" },
+        { "name": "angry", "label": "Giận dữ" },
+        { "name": "angry-2", "label": "Không đồng ý 02" },
+        { "name": "relaxed", "label": "Thư giãn", "emotion": "relaxed" },
+        { "name": "relaxed-2", "label": "Thư giãn 02", "emotion": "relaxed" },
+        { "name": "relaxed-3", "label": "Thư giãn 03", "emotion": "relaxed" }
+      ]
+    },
+    {
+      "id": "idle",
+      "label": "Lơ lửng",
+      "description": "Năm biến thể idle, phát lặp để so sánh.",
+      "loop": true,
+      "clips": [
+        { "name": "idle", "label": "Idle cơ bản" },
+        { "name": "idle-2", "label": "Idle 02" },
+        { "name": "idle-3", "label": "Idle 03" },
+        { "name": "idle-4", "label": "Idle 04" },
+        { "name": "idle-7", "label": "Idle 07" }
+      ]
+    },
+    {
+      "id": "talking",
+      "label": "Khi nói",
+      "description": "Năm biến thể cử động khi trò chuyện, kèm preview khẩu hình.",
+      "loop": true,
+      "speaking": true,
+      "clips": [
+        { "name": "idle-talking", "label": "Nói chuyện 01" },
+        { "name": "idle-talking-4", "label": "Nói chuyện 02" },
+        { "name": "idle-talking-5", "label": "Nói chuyện 03" },
+        { "name": "idle-talking-6", "label": "Nói tay trái 04" },
+        { "name": "idle-talking-7", "label": "Nói tay phải 05" }
+      ]
+    }
+  ],
+  "mixes": [
+    { "id": "greet", "label": "Chào và gật đầu", "description": "Nói chuyện + gật nhẹ + khẩu hình", "base": "idle-talking-6", "gesture": "nod-2", "emotion": "happy" },
+    { "id": "thoughtful", "label": "Kể chuyện trầm ngâm", "description": "Nói chuyện + suy nghĩ + khẩu hình", "base": "idle-talking-7", "gesture": "think-2", "emotion": "relaxed" },
+    { "id": "cheerful", "label": "Tin vui", "description": "Nói chuyện + vỗ tay + khẩu hình", "base": "idle-talking-5", "gesture": "happy-6", "emotion": "happy" },
+    { "id": "invite", "label": "Mời trò chuyện", "description": "Nói chuyện + giơ tay + khẩu hình", "base": "idle-talking-4", "gesture": "raise-hand-2", "emotion": "happy" }
+  ],
   "sets": {
     "default": {
       "idle": ["idle", "idle-2", "idle-3"],

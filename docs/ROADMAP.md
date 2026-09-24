@@ -41,7 +41,7 @@ Các dấu hoàn tất ở M0 mô tả **sự tồn tại của prototype**, kh�
 ## F1C — Port avatar và browser audio
 
 - [~] Port VRM runtime và animation cho Sân khấu; mount/unmount có cleanup. Chưa port toàn bộ hành vi MVP 0.
-- [~] Nạp model cục bộ, camera/zoom, biểu cảm, blink, idle, gesture và demo cô lập; chưa có đổi model, gaze hoặc lip-sync.
+- [~] Nạp model cục bộ, camera/zoom, biểu cảm, blink, idle, gesture, màn chào và thư viện 31 VRMA; có 4 mix animation nói/cử chỉ và preview khẩu hình chưa đồng bộ audio. Chưa có đổi model, gaze hoặc lip-sync theo tiếng nói thật.
 - [ ] Port AudioPlayer, SpeechInput qua composables, có hủy tác vụ và xử lý browser không hỗ trợ.
 - [ ] Kết nối state `idle → listening → thinking → speaking` ở app coordinator; UI chỉ hiển thị/phát event.
 - [~] Đã smoke-check rời/quay lại Sân khấu không báo lỗi renderer; mic session và playback chưa có để kiểm tra.

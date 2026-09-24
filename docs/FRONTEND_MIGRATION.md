@@ -26,7 +26,7 @@ Các path cũ dưới đây tương đối với `frontend/legacy/mvp-0/`; đíc
 | `src/audio/SpeechInput.js` | `src/features/voice/runtime/SpeechInput.js` | Draft |
 | `src/style.css` | `src/assets/styles/base.css` + scoped styles của layout/component | Foundation và component CSS chuẩn; gallery có scoped styles |
 | `src/styles/{tokens,components}.css` | `src/assets/styles/`, đồng bộ từ `design/wishlight/` | Đã chuyển |
-| `public/models/`, `public/animations/` trước migration | Giữ nguyên vị trí | Giữ assets/credits; chưa load trong app |
+| `public/models/`, `public/animations/` trước migration | Giữ nguyên vị trí | Stage tải model, 31 VRMA và manifest mix cho hội thoại; giữ assets/credits |
 
 ## Thứ tự triển khai
 

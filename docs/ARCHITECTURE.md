@@ -98,7 +98,7 @@ Alias `@/` trỏ tới `frontend/src/`. Dùng relative import trong cùng folder
 
 ## Routes
 
-Các route sản phẩm chia sẻ workspace shell. Sidebar trái chọn route và nội dung giữa chiếm toàn bộ vùng còn lại; shell không có tab bar cố định. Sidebar phải là icon rail với panel mở theo công cụ. Theme state nằm trong feature settings; trạng thái đóng/mở sidebar nằm trong AppLayout. Chi tiết tại [WORKSPACE_LAYOUT.md](WORKSPACE_LAYOUT.md).
+Các route sản phẩm chia sẻ workspace shell. Sidebar trái chọn route và nội dung giữa chiếm toàn bộ vùng còn lại; shell không có tab bar cố định. Sidebar phải là icon rail với panel mở theo công cụ. StageView render thư viện VRMA và mix vào sidebar bằng Vue Teleport, giữ nút demo và phát lại màn chào trong vùng giữa; state và runtime vẫn thuộc avatar feature. Theme state nằm trong feature settings; trạng thái đóng/mở sidebar nằm trong AppLayout. Chi tiết tại [WORKSPACE_LAYOUT.md](WORKSPACE_LAYOUT.md).
 
 | Path | Name | View | Trạng thái |
 | --- | --- | --- | --- |

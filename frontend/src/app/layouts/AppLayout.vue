@@ -1,9 +1,10 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { SETTINGS_GROUPS, SETTINGS_SECTIONS } from '@/features/settings/sections.js';
 import { useWorkspaceTheme } from '@/features/settings/composables/useWorkspaceTheme.js';
 import WishlightIcon from '@/shared/ui/WishlightIcon.vue';
+import { workspacePanelKey } from '@/shared/constants/workspacePanel.js';
 
 const route = useRoute();
 const { theme, initializeTheme, setTheme } = useWorkspaceTheme();
@@ -13,18 +14,21 @@ const features = [
   { name: 'stage', label: 'Sân khấu', icon: 'star' },
   { name: 'chat', label: 'Trò chuyện', icon: 'message' },
 ];
-const tools = [
+const baseTools = [
   { id: 'overview', label: 'Thông tin', icon: 'info' },
   { id: 'avatar', label: 'Nhân vật', icon: 'star' },
   { id: 'voice', label: 'Giọng nói', icon: 'wave' },
 ];
+const tools = computed(() => route.name === 'stage'
+  ? [{ id: 'animations', label: 'Thư viện VRMA', icon: 'play' }, ...baseTools]
+  : baseTools);
 const settingsMode = computed(() => route.name === 'settings');
 const settingsSection = computed(() => SETTINGS_SECTIONS.find((item) => item.id === route.query.section) || SETTINGS_SECTIONS[0]);
 const pageTitle = computed(() => settingsMode.value ? `Cài đặt / ${settingsSection.value.label}` : route.meta.title || 'Wishlight');
 const lastFeature = ref(features.some((item) => item.name === route.name) ? route.name : 'stage');
 const leftOpen = ref(true);
 const rightVisible = ref(true);
-const rightTool = ref(null);
+const rightTool = ref(route.name === 'stage' ? 'animations' : null);
 const accountOpen = ref(false);
 const narrow = ref(false);
 let media;
@@ -43,11 +47,23 @@ function closeDrawers() {
     rightVisible.value = false;
   }
 }
+provide(workspacePanelKey, {
+  rightVisible,
+  openTool: (id) => {
+    rightTool.value = id;
+    rightVisible.value = true;
+    if (narrow.value) leftOpen.value = false;
+  },
+  closeRightOnNarrow: () => {
+    if (narrow.value) rightVisible.value = false;
+  },
+});
 function toggleLeft() {
   leftOpen.value = !leftOpen.value;
   if (narrow.value && leftOpen.value) rightVisible.value = false;
 }
 function toggleRight() {
+  if (!rightVisible.value && route.name === 'stage' && !rightTool.value) rightTool.value = 'animations';
   rightVisible.value = !rightVisible.value;
   if (narrow.value && rightVisible.value) leftOpen.value = false;
 }
@@ -65,6 +81,8 @@ function onKeydown(event) {
 }
 watch(() => route.fullPath, () => {
   if (features.some((item) => item.name === route.name)) lastFeature.value = route.name;
+  if (route.name === 'stage' && rightVisible.value && !narrow.value) rightTool.value = 'animations';
+  else if (rightTool.value === 'animations') rightTool.value = null;
   accountOpen.value = false;
   closeDrawers();
 });
@@ -131,7 +149,7 @@ onBeforeUnmount(() => {
         </div>
         <div class="top-actions">
           <button type="button" class="icon-button" :aria-label="theme === 'light' ? 'Chuyển sang theme tối' : 'Chuyển sang theme sáng'" :title="theme === 'light' ? 'Theme tối' : 'Theme sáng'" @click="setTheme(theme === 'light' ? 'dark' : 'light')"><WishlightIcon :name="theme === 'light' ? 'moon' : 'sun'" /></button>
-          <button v-if="!rightVisible" type="button" class="icon-button" aria-label="Hiện thanh công cụ bên phải" aria-controls="utility-sidebar" @click="toggleRight"><WishlightIcon name="panel-right" /></button>
+          <button v-if="!rightVisible" type="button" class="icon-button" :aria-label="route.name === 'stage' ? 'Hiện thư viện VRMA' : 'Hiện thanh công cụ bên phải'" aria-controls="utility-sidebar" @click="toggleRight"><WishlightIcon name="panel-right" /></button>
         </div>
       </header>
       <main id="main-content" class="workspace-content" tabindex="-1"><slot /></main>
@@ -139,7 +157,8 @@ onBeforeUnmount(() => {
     </div>
 
     <aside id="utility-sidebar" class="utility-sidebar" aria-label="Công cụ mở rộng" :inert="!rightVisible">
-      <section v-if="rightTool" class="tool-detail" :aria-label="tools.find((item) => item.id === rightTool)?.label">
+      <section v-show="rightTool === 'animations' && route.name === 'stage'" id="stage-animation-panel" class="tool-detail" aria-label="Thư viện VRMA"></section>
+      <section v-if="rightTool && rightTool !== 'animations'" class="tool-detail" :aria-label="tools.find((item) => item.id === rightTool)?.label">
         <div class="tool-heading"><span>{{ tools.find((item) => item.id === rightTool)?.label }}</span><span class="tool-hint">Chọn icon lần nữa để thu gọn</span></div>
         <template v-if="rightTool === 'overview'"><h2>{{ route.meta.title }}</h2><p>Giao diện đang ở bản xem trước. Các tính năng hội thoại sẽ được bổ sung ở bản tiếp theo.</p></template>
         <template v-else-if="rightTool === 'avatar'"><h2>Nhân vật trên sân khấu</h2><p>Model VRM cục bộ và bộ animation demo đã có trên Sân khấu. Chức năng chọn hoặc đổi model sẽ được bổ sung sau.</p><RouterLink :to="{ name: 'stage' }">Mở Sân khấu</RouterLink></template>
@@ -172,6 +191,13 @@ onBeforeUnmount(() => {
 .icon-button:hover, .icon-button[aria-pressed='true'] { color: var(--ink); background: var(--parchment-sunk); }
 .icon-button :deep(svg) { width: 17px; height: 17px; }
 .sidebar-list { flex: 1; min-height: 0; overflow: auto; padding: var(--space-4) var(--space-2); }
+.sidebar-list, .tool-detail, .workspace-content { scrollbar-width: thin; scrollbar-color: var(--line-strong) var(--scroll-surface); }
+.sidebar-list, .tool-detail { --scroll-surface: var(--parchment-raised); }
+.workspace-content { --scroll-surface: var(--parchment); }
+.sidebar-list::-webkit-scrollbar, .tool-detail::-webkit-scrollbar, .workspace-content::-webkit-scrollbar { width: 9px; height: 9px; }
+.sidebar-list::-webkit-scrollbar-track, .tool-detail::-webkit-scrollbar-track, .workspace-content::-webkit-scrollbar-track { background: var(--scroll-surface); }
+.sidebar-list::-webkit-scrollbar-thumb, .tool-detail::-webkit-scrollbar-thumb, .workspace-content::-webkit-scrollbar-thumb { border: 2px solid var(--scroll-surface); border-radius: 999px; background: var(--line-strong); }
+.sidebar-list::-webkit-scrollbar-thumb:hover, .tool-detail::-webkit-scrollbar-thumb:hover, .workspace-content::-webkit-scrollbar-thumb:hover { background: var(--gold-strong); }
 .sidebar-title { margin: 0 var(--space-2) var(--space-6); font-size: 18px; font-weight: 800; }
 .nav-group + .nav-group { margin-top: var(--space-6); }
 .group-label { margin: 0 0 var(--space-2); padding-inline: var(--space-2); color: var(--ink-muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }

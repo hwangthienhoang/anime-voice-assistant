@@ -4,6 +4,7 @@ import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 import { AnimationController } from './AnimationController.js';
 import { DemoSequence, STAGE_SEQUENCE } from './DemoSequence.js';
 import { createEntranceClip } from './EntranceMotion.js';
+import { previewVisemes, VISEMES } from './MouthMotion.js';
 
 const EXPRESSIONS = ['happy', 'sad', 'relaxed'];
 
@@ -45,6 +46,9 @@ export class VRMAvatar {
     });
     this.emotion = 'neutral';
     this.expressionWeights = Object.fromEntries(EXPRESSIONS.map((name) => [name, 0]));
+    this.mouthWeights = Object.fromEntries(VISEMES.map((name) => [name, 0]));
+    this.mouthSources = new Set();
+    this.mouthTime = 0;
     this.blinkTime = 2.2;
     this.blinkPhase = -1;
     this.clock = new THREE.Clock();
@@ -136,13 +140,32 @@ export class VRMAvatar {
     this.resize();
   }
 
-  play(clip, emotion = 'neutral') {
+  play(clip, emotion = 'neutral', options) {
     this.emotion = emotion;
-    return this.animations.play(clip);
+    this.setMouthPreview('clip', Boolean(options?.speaking));
+    return this.animations.play(clip, options);
   }
+
+  playMix(base, gesture, emotion = 'neutral') {
+    this.emotion = emotion;
+    const played = this.animations.playMix(base, gesture);
+    this.setMouthPreview('clip', played);
+    return played;
+  }
+
+  setMouthPreview(source, active) {
+    if (active) {
+      if (!this.mouthSources.size) this.mouthTime = 0;
+      this.mouthSources.add(source);
+    }
+    else this.mouthSources.delete(source);
+  }
+
+  prepareClip(clip) { return this.animations.ensureClip(clip, this.vrm); }
 
   startSequence(kind) {
     if (!STAGE_SEQUENCE[kind]?.every((cue) => this.animations.actions.has(cue.clip))) return false;
+    this.mouthSources.clear();
     if (kind === 'intro' && !this.reducedMotion) {
       const fov = THREE.MathUtils.degToRad(this.camera.fov);
       const farDistance = this.camera.position.z + 1.25;
@@ -163,6 +186,7 @@ export class VRMAvatar {
 
   stopSequence() {
     this.sequence.stop();
+    this.mouthSources.clear();
     this.animations.play('idle', { loop: true, fadeSeconds: 0 });
     this.resetEntrance();
     this.emotion = 'neutral';
@@ -200,6 +224,12 @@ export class VRMAvatar {
       const target = this.emotion === name ? 0.85 : 0;
       this.expressionWeights[name] += (target - this.expressionWeights[name]) * (1 - Math.exp(-dt * 5));
       if (manager.getExpression(name)) manager.setValue(name, this.expressionWeights[name]);
+    }
+    this.mouthTime += dt;
+    const targets = this.mouthSources.size ? previewVisemes(this.mouthTime) : null;
+    for (const name of VISEMES) {
+      this.mouthWeights[name] += ((targets?.[name] || 0) - this.mouthWeights[name]) * (1 - Math.exp(-dt * 18));
+      if (manager.getExpression(name)) manager.setValue(name, this.mouthWeights[name]);
     }
     this.blinkTime -= dt;
     if (this.blinkTime <= 0 && this.blinkPhase < 0) this.blinkPhase = 0;

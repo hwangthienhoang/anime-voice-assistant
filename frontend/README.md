@@ -13,7 +13,7 @@ npm run dev
 
 Mở [dev gallery](http://localhost:5173/dev/design-system) để xem toàn bộ design system. Catalogue/contract ở [DESIGN_SYSTEM.md](../docs/DESIGN_SYSTEM.md). Gallery không có trong production build/preview.
 
-App chính ở [localhost:5173](http://localhost:5173). `/` có model VRM; màn chào dùng `AnimationClip` tạo tại runtime để Paimon bay từ xa vào giữa sân khấu với tay/chân chuyển động, xoay một vòng, đáp đất, vẫy tay và hiện chữ typewriter. Nút “Xem lại màn chào” phát lại toàn bộ choreography; khi bật reduced motion, lời chào bắt đầu ngay và bỏ qua đoạn bay. `/chat` còn placeholder, `/settings` hoạt động một phần. URL khác hiện 404. `npm run preview` phục vụ output sau build.
+App chính ở [localhost:5173](http://localhost:5173). `/` có model VRM; màn chào dùng `AnimationClip` tạo tại runtime để Paimon bay từ xa vào giữa sân khấu với tay/chân chuyển động, xoay một vòng, đáp đất, vẫy tay và hiện chữ typewriter. Nút “Xem chuỗi demo” và “Xem lại màn chào” nằm dưới sân khấu; khi bật reduced motion, lời chào bắt đầu ngay và bỏ qua đoạn bay. Thư viện 31 VRMA và bốn mix nằm trong sidebar phải; trên màn hình hẹp, chọn clip sẽ đóng drawer để xem nhân vật. Preview khẩu hình chạy khi phát clip nói, mix và chữ typewriter trong màn chào, chưa đồng bộ với audio/TTS. `/chat` còn placeholder, `/settings` hoạt động một phần. URL khác hiện 404. `npm run preview` phục vụ output sau build.
 
 ```bash
 npm test

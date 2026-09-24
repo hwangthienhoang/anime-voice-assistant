@@ -6,7 +6,7 @@ Bộ presentational components đã có trong [dev gallery](../../docs/DESIGN_SY
 
 ## Nguyên tắc
 
-- **Nhân vật là trung tâm.** Sân khấu nằm trong workspace content của [workspace layout](../../docs/WORKSPACE_LAYOUT.md). DialogueBox ở cạnh dưới của cảnh; sidebar và inspector nằm ngoài cảnh và có thể ẩn để mở rộng không gian, không phủ lên mặt nhân vật ở desktop.
+- **Nhân vật là trung tâm.** Sân khấu nằm trong workspace content của [workspace layout](../../docs/WORKSPACE_LAYOUT.md). DialogueBox ở cạnh dưới của cảnh; nút phát demo nằm dưới cảnh, thư viện animation thuộc inspector bên phải và có thể ẩn để mở rộng không gian.
 - **Khung thoại cho khoảnh khắc, trang chat cho toàn bộ.** DialogueBox chỉ hiện câu đang nói. Mọi lịch sử, tìm kiếm, phát lại giọng nằm ở ChatPage, mở bằng nút LOG.
 - **Trạng thái giọng nói luôn nhìn thấy được.** Mỗi lượt voice đi qua `idle → listening → thinking → speaking`; MicButton hiện cả màu lẫn chữ.
 - **Ấm, mềm, có trang trí vừa phải.** Viên thuốc và góc bo lớn, viền vàng mảnh, ngôi sao bốn cánh làm dấu hiệu. Không dùng gradient tím-xanh, không dùng emoji làm trang trí.

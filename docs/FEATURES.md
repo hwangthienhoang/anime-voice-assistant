@@ -11,7 +11,7 @@ Dùng cùng [roadmap](ROADMAP.md), [architecture](ARCHITECTURE.md) và [migratio
 
 - Vue 3 + Vue Router 4 + Vite + JavaScript ESM; giữ Three.js và thư viện VRM.
 - Wishlight là design source: giấy da kem, xanh navy, viền vàng, ngôi sao bốn cánh; không dùng tài sản của game thương mại.
-- Sân khấu hiện có model VRM cục bộ, `AnimationClip` bay từ xa với tay/chân chuyển động, xoay một vòng rồi đáp đất, vẫy tay và hiện chữ typewriter; nút phát lại chạy lại toàn bộ chuỗi. Reduced motion bỏ qua đoạn bay và bắt đầu lời chào ngay. DialogueBox cho hội thoại thật chưa được ghép. `/chat` còn placeholder; `/settings` có navigation chia nhóm và theme hoạt động. Dev gallery có bộ components tương tác bằng fixture.
+- Sân khấu hiện có model VRM cục bộ, `AnimationClip` bay từ xa với tay/chân chuyển động, xoay một vòng rồi đáp đất, vẫy tay và hiện chữ typewriter; nút phát lại chạy lại toàn bộ chuỗi. Thư viện Stage cho xem cả 31 VRMA theo bốn nhóm, tải clip bổ sung khi chọn; 4 preset mix ghép animation nói với cử chỉ thân trên. Khẩu hình `aa/ih/ou/ee/oh` là preview mô phỏng, chưa nhận phoneme hoặc audio từ voice pipeline. Reduced motion bỏ qua đoạn bay và bắt đầu lời chào ngay. DialogueBox cho hội thoại thật chưa được ghép. `/chat` còn placeholder; `/settings` có navigation chia nhóm và theme hoạt động. Dev gallery có bộ components tương tác bằng fixture.
 - Emotions: `neutral`, `happy`, `relaxed`, `sad`, `surprised`, `angry`.
 - Voice states: `idle`, `listening`, `thinking`, `speaking`. UI state không được giả lập là mic/LLM đang chạy thật.
 
