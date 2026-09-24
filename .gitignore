@@ -14,3 +14,4 @@ dist/
 
 # Model VRM thường có bản quyền riêng, không đưa lên git
 frontend/public/models/*.vrm
+!frontend/public/models/avatar.vrm
