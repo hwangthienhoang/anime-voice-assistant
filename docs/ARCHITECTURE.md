@@ -4,7 +4,7 @@
 
 - Vue 3 SFC + Composition API (`<script setup>`), JavaScript ESM.
 - Vite giữ major 5 của prototype; thêm `@vitejs/plugin-vue` major 5 tương thích. Không gộp việc nâng major tooling vào đợt tổ chức lại source.
-- Vue Router 4 với history routing, lazy-loaded views, named routes và 404.
+- Vue Router 4 với history routing ở local dev/build thường và hash routing cho GitHub Pages; lazy-loaded views, named routes và 404.
 - Giữ Three.js, `@pixiv/three-vrm`, `@pixiv/three-vrm-animation`; skeleton chưa import runtime 3D.
 - Wishlight là design source; chưa thêm UI framework, CSS framework, Pinia hoặc TypeScript. Khi có nhu cầu state dùng chung thực tế, ghi quyết định mới trước khi thêm dependency.
 - Backend giữ nguyên và không nằm trong dependency graph của skeleton.
@@ -14,7 +14,7 @@
 ```text
 frontend/
 ├── index.html                         # #app và module entry, không chứa UI nghiệp vụ
-├── vite.config.js                     # Vue plugin, alias @, proxy /api
+├── vite.config.js                     # Vue plugin, alias @, Pages base, proxy /api
 ├── jsconfig.json                      # alias cho editor
 ├── package.json / package-lock.json
 ├── tests/components.test.js            # integration contracts cho UI/gallery
@@ -102,7 +102,7 @@ Các route sản phẩm chia sẻ workspace shell. Sidebar trái chọn route v�
 
 Dùng RouterLink/RouterView, không dùng class toggle để thay route. LOG sẽ điều hướng tới `chat`; nút trở về dùng route `stage`. Chưa tạo route onboarding/persona/memory vì chưa có design/scope triển khai.
 
-History mode cần host production fallback các URL UI về `index.html`; `/api/*` phải được xử lý riêng trước fallback. Vite dev/preview hỗ trợ kiểm tra refresh deep link. Chưa cấu hình deployment trong đợt này.
+Local dev/build thường dùng history mode tại `/`. GitHub Pages build đặt `GITHUB_PAGES=true`, đổi base thành `/anime-voice-assistant/` và dùng hash mode (`/#/chat`, `/#/settings`), vì Pages không có SPA fallback. Nếu sau này dùng host khác với history mode, host đó cần fallback các URL UI về `index.html`; `/api/*` phải được xử lý riêng trước fallback. Workflow deploy Pages nằm tại `.github/workflows/deploy-pages.yml`.
 
 ## Dev gallery
 

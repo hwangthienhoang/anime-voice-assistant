@@ -45,6 +45,8 @@ npm run build
 npm run preview
 ```
 
+Để deploy skeleton lên GitHub Pages, xem [hướng dẫn frontend](frontend/README.md#deploy-lên-github-pages). Bản Pages chưa có chat, voice hoặc avatar runtime.
+
 ## Cấu trúc
 
 ```text

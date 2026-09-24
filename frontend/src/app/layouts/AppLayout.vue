@@ -54,6 +54,9 @@ function toggleRight() {
 function selectTool(id) {
   rightTool.value = rightTool.value === id ? null : id;
 }
+function focusMain() {
+  document.getElementById('main-content')?.focus();
+}
 function onKeydown(event) {
   if (event.key !== 'Escape') return;
   if (accountOpen.value) accountOpen.value = false;
@@ -79,7 +82,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="workspace-shell" :class="{ 'left-closed': !leftOpen, 'right-hidden': !rightVisible, 'tool-open': Boolean(rightTool), narrow }">
-    <a class="skip-link" href="#main-content">Đến nội dung chính</a>
+    <a class="skip-link" href="#main-content" @click.prevent="focusMain">Đến nội dung chính</a>
     <button v-if="narrow && (leftOpen || rightVisible)" type="button" class="drawer-backdrop" aria-label="Đóng thanh bên" @click="closeDrawers" />
 
     <aside id="navigation-sidebar" class="navigation-sidebar" aria-label="Điều hướng ứng dụng" :inert="!leftOpen">
