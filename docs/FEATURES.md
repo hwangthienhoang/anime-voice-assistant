@@ -11,7 +11,7 @@ Dùng cùng [roadmap](ROADMAP.md), [architecture](ARCHITECTURE.md) và [migratio
 
 - Vue 3 + Vue Router 4 + Vite + JavaScript ESM; giữ Three.js và thư viện VRM.
 - Wishlight là design source: giấy da kem, xanh navy, viền vàng, ngôi sao bốn cánh; không dùng tài sản của game thương mại.
-- Sân khấu có DialogueBox cho câu hiện tại; `/chat` dành cho lịch sử chi tiết; `/settings` có navigation chia nhóm và theme hoạt động. Sân khấu/Chat còn placeholder; dev gallery có bộ components tương tác bằng fixture.
+- Sân khấu hiện có model VRM cục bộ, `AnimationClip` bay từ xa với tay/chân chuyển động, xoay một vòng rồi đáp đất, vẫy tay và hiện chữ typewriter; nút phát lại chạy lại toàn bộ chuỗi. Reduced motion bỏ qua đoạn bay và bắt đầu lời chào ngay. DialogueBox cho hội thoại thật chưa được ghép. `/chat` còn placeholder; `/settings` có navigation chia nhóm và theme hoạt động. Dev gallery có bộ components tương tác bằng fixture.
 - Emotions: `neutral`, `happy`, `relaxed`, `sad`, `surprised`, `angry`.
 - Voice states: `idle`, `listening`, `thinking`, `speaking`. UI state không được giả lập là mic/LLM đang chạy thật.
 
@@ -29,12 +29,12 @@ Dùng cùng [roadmap](ROADMAP.md), [architecture](ARCHITECTURE.md) và [migratio
 
 | Trạng thái | Tính năng | Ưu tiên | Mốc | MVP 0 / đích mới |
 | --- | --- | --- | --- | --- |
-| [ ] | Nạp/đổi VRM, camera và zoom | P0 | F1C | Có source cũ; AvatarStage hiện placeholder |
-| [ ] | Biểu cảm theo emotion | P0 | F1C | Có `setEmotion`; runtime mới draft |
-| [ ] | Blink, thở, idle | P0 | F1C | Tham khảo IdleMotion và VRMAvatar |
+| [~] | Nạp/đổi VRM, camera và zoom | P0 | F1C | Tải `avatar.vrm`, tự canh camera và zoom; chưa đổi model |
+| [~] | Biểu cảm theo emotion | P0 | F1C | `happy`, `sad`, `relaxed` trong demo; chưa nối hội thoại |
+| [~] | Blink, thở, idle | P0 | F1C | Blink và VRMA idle đã chạy; thở bằng code chưa port |
 | [ ] | Nhìn theo chuột | P0 | F1C | Có source cũ; cần cleanup listener |
 | [ ] | Lip-sync theo biên độ | P0 | F1C | Có source cũ; viseme để sau MVP |
-| [ ] | Gesture theo ngữ cảnh | P1 | F1C / Sau MVP | Có VRMA nod/shake/think/raise-hand; cần đánh giá trước khi port |
+| [~] | Gesture theo ngữ cảnh | P1 | F1C / Sau MVP | VRMA nod/shake/think/raise-hand chạy trong demo; chưa nối ngữ cảnh hội thoại |
 | [ ] | Phản ứng khi chạm đầu/tay | P1 | Sau MVP | Chưa có; cần design tương tác |
 | [ ] | Saccade, nhìn camera khi nói | P1 | Sau MVP | Có thử nghiệm gaze trong source cũ, chưa nghiệm thu |
 | [ ] | Wardrobe, background | P2 | Sau MVP | Cần design |

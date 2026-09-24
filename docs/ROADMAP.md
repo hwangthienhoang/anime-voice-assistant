@@ -4,7 +4,7 @@
 
 Giai đoạn từng được gọi là “MVP đã có” được xác định lại thành **MVP 0**: prototype để test model, chuyển động nhân vật, luồng text/voice thử nghiệm và một phần CSS theo Wishlight. Chưa có cấu trúc frontend và mức hoàn thiện đủ để coi là MVP sản phẩm.
 
-Trạng thái hiện tại: **F1B — bộ components và dev gallery**; F1A đã hoàn tất. Các views sản phẩm vẫn là skeleton; backend chờ plan riêng. `[x]` = hoàn tất trong phạm vi mô tả, `[~]` = một phần, `[ ]` = chưa thực hiện. File draft không được tính là feature đã xong.
+Trạng thái hiện tại: **F1B components/gallery đã có, F1C avatar đang triển khai**; F1A đã hoàn tất. Sân khấu có demo cục bộ, Chat vẫn là skeleton; backend chờ plan riêng. `[x]` = hoàn tất trong phạm vi mô tả, `[~]` = một phần, `[ ]` = chưa thực hiện. File draft không được tính là feature đã xong.
 
 ## M0 — MVP 0 / prototype tham khảo
 
@@ -32,7 +32,7 @@ Các dấu hoàn tất ở M0 mô tả **sự tồn tại của prototype**, kh�
 - [x] Implement shared UI: BaseButton, BaseToggle, WishlightIcon, EmotionTag; bổ sung Input/Select/Range/Notice.
 - [x] Implement DialogueBox, MicButton, ChatBubble, ChatComposer, ConversationItem và presentational ChatPanel/SettingsPanel/AvatarStage.
 - [x] Dev gallery `/dev/design-system`: toàn bộ tokens, light/dark, component states và tương tác fixture. Xem `DESIGN_SYSTEM.md`.
-- [ ] Hoàn thiện nội dung Sân khấu, ChatView và các mục Settings chưa có runtime bên trong workspace shell; responsive và theme của từng màn.
+- [~] Sân khấu đã có nội dung, model và demo responsive; ChatView và một số mục Settings vẫn chưa hoàn thiện.
 - [x] Dùng fixture rõ ràng trong gallery để kiểm tra empty/loading/error states trước khi nối API.
 - [~] Component tests và browser smoke-check keyboard/theme/tiếng Việt/reduced motion; chưa nghiệm thu full app accessibility/contrast.
 
@@ -40,11 +40,11 @@ Các dấu hoàn tất ở M0 mô tả **sự tồn tại của prototype**, kh�
 
 ## F1C — Port avatar và browser audio
 
-- [ ] Port VRM runtime và animation từng phần từ snapshot; mount/unmount có cleanup.
-- [ ] Nạp/đổi model, camera/zoom, biểu cảm, idle/gaze/gesture và demo cô lập.
+- [~] Port VRM runtime và animation cho Sân khấu; mount/unmount có cleanup. Chưa port toàn bộ hành vi MVP 0.
+- [~] Nạp model cục bộ, camera/zoom, biểu cảm, blink, idle, gesture và demo cô lập; chưa có đổi model, gaze hoặc lip-sync.
 - [ ] Port AudioPlayer, SpeechInput qua composables, có hủy tác vụ và xử lý browser không hỗ trợ.
 - [ ] Kết nối state `idle → listening → thinking → speaking` ở app coordinator; UI chỉ hiển thị/phát event.
-- [ ] Kiểm tra đổi route không nhân đôi RAF, listeners, mic session hoặc playback.
+- [~] Đã smoke-check rời/quay lại Sân khấu không báo lỗi renderer; mic session và playback chưa có để kiểm tra.
 
 **Tiêu chí hoàn tất:** kiểm tra được avatar và audio với local fixtures/demo; cleanup đúng khi rời màn hình. Chưa yêu cầu gọi LLM/TTS thật.
 

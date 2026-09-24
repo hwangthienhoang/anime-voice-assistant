@@ -7,7 +7,7 @@ Trợ lý AI trò chuyện bằng text/voice với nhân vật anime 3D (VRM), s
 Project đang **tái cấu trúc frontend**, chưa có MVP sản phẩm hoàn chỉnh.
 
 - **MVP 0** là prototype trước đây: thử model VRM, animation, luồng chat/voice và một phần CSS Wishlight. Source được giữ trong [`frontend/legacy/mvp-0/`](frontend/legacy/mvp-0/README.md) để tham khảo.
-- **Frontend hiện tại** có Vue app shell, bộ presentational components Wishlight và **dev gallery** để thử toàn bộ design elements. Các màn hình sản phẩm vẫn là skeleton; runtime/API còn draft, chưa load avatar, thu mic hoặc gọi API.
+- **Frontend hiện tại** có Vue app shell, bộ presentational components Wishlight, **dev gallery** và Sân khấu chạy model VRM cục bộ với màn chào/animation demo. Chat, voice và API vẫn chưa tích hợp.
 - **Backend** giữ nguyên prototype FastAPI; chưa nằm trong đợt tái cấu trúc này. Kế hoạch backend sẽ được chủ project xác định riêng.
 
 ## Bắt đầu đọc
@@ -26,7 +26,7 @@ Project đang **tái cấu trúc frontend**, chưa có MVP sản phẩm hoàn ch
 
 ## Chạy frontend
 
-Dùng Node.js 22.12+ hoặc 24.x và npm. Skeleton không cần Python, API key hoặc model VRM.
+Dùng Node.js 22.12+ hoặc 24.x và npm. Sân khấu cần file `frontend/public/models/avatar.vrm`; các route khác không cần model, Python hoặc API key.
 
 ```bash
 cd frontend
@@ -36,7 +36,7 @@ npm run dev
 
 Mở [Wishlight dev gallery](http://localhost:5173/dev/design-system) để xem components/design tokens và thử light/dark, inputs, conversation states. Gallery chỉ có trong dev.
 
-App chính ở [localhost:5173](http://localhost:5173). Các route `/`, `/chat`, `/settings` hiện placeholder cho từng khu vực; URL không khớp hiện trang 404. Đây là nền tảng để triển khai tiếp, không phải bản demo hội thoại cũ.
+App chính ở [localhost:5173](http://localhost:5173). Route `/` tải avatar, tự phát màn chào và có các nút demo animation; `/chat` vẫn là placeholder, `/settings` mới có một số mục hoạt động. URL không khớp hiện trang 404. Chưa có hội thoại thật.
 
 ```bash
 npm test
@@ -69,7 +69,7 @@ Frontend dùng **Vue 3, Vue Router 4, Vite, JavaScript ESM**, giữ các depende
 
 ## Model và animation
 
-- Model riêng đặt tại `frontend/public/models/avatar.vrm`; xem [hướng dẫn model](frontend/public/models/README.md). Skeleton chưa tự load file này.
+- Model riêng đặt tại `frontend/public/models/avatar.vrm`; Sân khấu tự tải file này. Xem [hướng dẫn model](frontend/public/models/README.md).
 - Animation và manifest nằm trong `frontend/public/animations/`; giữ [credits](frontend/public/animations/NOTICE.md) cùng assets.
 - Logic cũ về idle, gesture, lip-sync, camera và demo nằm trong `frontend/legacy/mvp-0/src/avatar/`.
 

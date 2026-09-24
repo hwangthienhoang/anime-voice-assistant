@@ -10,8 +10,8 @@ const labels = { empty: 'Chưa có nhân vật', loading: 'Đang tải nhân v�
 
 <template>
   <section class="wl-stage" aria-label="Khu vực nhân vật">
-    <div class="wl-stage-scene"><slot v-if="safeStatus === 'ready'" name="avatar" />
-      <div v-else class="wl-stage-status" :role="safeStatus === 'error' ? 'alert' : 'status'">
+    <div class="wl-stage-scene"><slot name="avatar" />
+      <div v-if="safeStatus !== 'ready'" class="wl-stage-status" :role="safeStatus === 'error' ? 'alert' : 'status'">
         <WishlightIcon :name="safeStatus === 'loading' ? 'loader' : safeStatus === 'error' ? 'warning' : 'star'" :class="{ 'wl-spin': safeStatus === 'loading' }" />
         <h3 class="wl-text-title">{{ labels[safeStatus] }}</h3>
         <p>{{ message || 'Nhân vật sẽ xuất hiện tại đây.' }}</p>

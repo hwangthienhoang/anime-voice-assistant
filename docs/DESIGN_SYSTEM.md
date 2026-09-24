@@ -53,6 +53,8 @@ Paths tương đối với `frontend/src/`. Tất cả component dưới đây l
 
 `ChatPanel` compose nội bộ conversation; gallery view lắp MicButton qua composer slot, không tạo dependency conversation → voice. Dưới 900px viewport, sidebar ChatPanel thu gọn và được mở bằng nút danh sách. Đây là bố cục inline có thể thu gọn, không phải modal focus trap.
 
+`AvatarStage` luôn mount slot `avatar` để canvas có thể khởi tạo trong lúc `status=loading`; status overlay vẫn xuất hiện cho loading/error. Component chỉ hiển thị UI, còn `StageView` nối `useAvatar` với runtime 3D.
+
 Control chỉ emit ý định. Ví dụ `play` không phát audio, `toggle` không bật mic, `select-model` không đọc file. App owner quyết định behavior và xác nhận thao tác xóa thật khi tích hợp.
 
 ## Source of truth

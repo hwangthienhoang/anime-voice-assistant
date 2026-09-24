@@ -19,7 +19,7 @@ Shell của các route sản phẩm `/`, `/chat`, `/settings` hướng đến m�
 - Sidebar trái trong chế độ Cài đặt có nút “Tính năng” quay về feature vừa dùng. Các nhóm Cá nhân hóa và Ứng dụng dùng cùng route `/settings` với query `section`; deep link và refresh giữ đúng mục. `/settings` mặc định mở Giao diện.
 - Theme switch là icon nhỏ trên top bar ở mọi route sản phẩm. Trang Giao diện có lựa chọn Sáng/Tối tương ứng. Theme được lưu trong `localStorage`; lần đầu dùng `prefers-color-scheme`.
 - Ở viewport ≤ 900px, sidebar mở dạng drawer và chỉ một sidebar xuất hiện cùng lúc. Sidebar đóng dùng `inert`; Escape hoặc backdrop đóng drawer. Menu avatar vẫn nằm trong sidebar.
-- Route navigation dùng Vue Router và không giữ view cũ bằng `KeepAlive`. Runtime avatar/audio khi được port phải cleanup lúc unmount.
+- Route navigation dùng Vue Router và không giữ view cũ bằng `KeepAlive`. Runtime avatar của Sân khấu dừng RAF/observer và dispose khi unmount; audio khi được port phải làm tương tự.
 
 ## Contract cho tab của feature sau này
 
@@ -27,6 +27,6 @@ Khi một feature có nhiều nội dung mở đồng thời (ví dụ nhiều p
 
 ## Trạng thái triển khai
 
-Shell, navigation cài đặt, theme switch và cấu trúc icon rail đã hoạt động ở F1B. Sân khấu và Trò chuyện vẫn là placeholder; chỉ mục Giao diện và Thông tin có nội dung đang chạy. Mục Nhân vật, Giọng nói, Dữ liệu hiện trạng thái chưa sẵn sàng. Tab có thể đóng, nhiều session, account thật, mic, VRM và API chưa được triển khai.
+Shell, navigation cài đặt, theme switch và cấu trúc icon rail đã hoạt động ở F1B. Sân khấu hiện tải VRM cục bộ và có demo animation; Trò chuyện vẫn là placeholder. Mục Giao diện và Thông tin có nội dung đang chạy; công cụ Nhân vật dẫn tới Sân khấu nhưng chưa có chọn/đổi model. Giọng nói và Dữ liệu chưa sẵn sàng. Tab có thể đóng, nhiều session, account thật, mic và API chưa được triển khai.
 
 Wishlight tokens và component CSS vẫn là design source. Layout cụ thể dùng scoped CSS tại `frontend/src/app/layouts/AppLayout.vue`; theme state nằm trong `features/settings/composables/useWorkspaceTheme.js`. Design gallery giữ layout riêng chỉ trong dev.

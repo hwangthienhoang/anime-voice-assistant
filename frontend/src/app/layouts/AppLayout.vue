@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
       <section v-if="rightTool" class="tool-detail" :aria-label="tools.find((item) => item.id === rightTool)?.label">
         <div class="tool-heading"><span>{{ tools.find((item) => item.id === rightTool)?.label }}</span><span class="tool-hint">Chọn icon lần nữa để thu gọn</span></div>
         <template v-if="rightTool === 'overview'"><h2>{{ route.meta.title }}</h2><p>Giao diện đang ở bản xem trước. Các tính năng hội thoại sẽ được bổ sung ở bản tiếp theo.</p></template>
-        <template v-else-if="rightTool === 'avatar'"><h2>Chưa tải nhân vật</h2><p>Bạn sẽ có thể chọn model VRM khi tính năng nhân vật sẵn sàng.</p><RouterLink :to="{ name: 'stage' }">Mở Sân khấu</RouterLink></template>
+        <template v-else-if="rightTool === 'avatar'"><h2>Nhân vật trên sân khấu</h2><p>Model VRM cục bộ và bộ animation demo đã có trên Sân khấu. Chức năng chọn hoặc đổi model sẽ được bổ sung sau.</p><RouterLink :to="{ name: 'stage' }">Mở Sân khấu</RouterLink></template>
         <template v-else><h2>Giọng nói chưa sẵn sàng</h2><p>Ứng dụng sẽ chỉ bật micro sau thao tác của bạn khi tính năng giọng nói hoàn thành.</p><RouterLink :to="{ name: 'settings', query: { section: 'voice' } }">Mở cài đặt giọng nói</RouterLink></template>
       </section>
       <div class="tool-rail">
